@@ -14,6 +14,7 @@ class Item extends Model
         'name',
         'type',
         'unit',
+        'cost',
         'price',
         'stock',
         'minimum_stock',
@@ -26,6 +27,7 @@ class Item extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'is_track_stock' => 'boolean',
+        'cost' => 'decimal:2',
         'price' => 'decimal:2',
         'stock' => 'decimal:2',
         'minimum_stock' => 'decimal:2',

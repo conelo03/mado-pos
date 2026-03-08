@@ -17,6 +17,7 @@ class Index extends Component
     public $name = '';
     public $type = 'PRODUCT';
     public $unit = '';
+    public $cost = '';
     public $price = '';
     public $minimum_stock = '';
     public $is_active = true;
@@ -27,6 +28,7 @@ class Index extends Component
         'name' => 'required|string|max:255',
         'type' => 'required|in:PRODUCT,RAW_MATERIAL',
         'unit' => 'required|string|max:50',
+        'cost' => 'required|numeric|min:0',
         'price' => 'required|numeric|min:0',
         'minimum_stock' => 'required|numeric|min:0',
     ];
@@ -48,7 +50,7 @@ class Index extends Component
 
     public function openModal()
     {
-        $this->reset(['editingId', 'name', 'type', 'unit', 'price', 'minimum_stock', 'is_active', 'is_track_stock']);
+        $this->reset(['editingId', 'name', 'type', 'unit', 'cost', 'price', 'minimum_stock', 'is_active', 'is_track_stock']);
         $this->type = 'PRODUCT';
         $this->is_active = true;
         $this->is_track_stock = true;
@@ -70,6 +72,7 @@ class Index extends Component
                 'name' => $this->name,
                 'type' => $this->type,
                 'unit' => $this->unit,
+                'cost' => $this->cost,
                 'price' => $this->price,
                 'minimum_stock' => $this->minimum_stock,
                 'is_active' => $this->is_active,
@@ -81,6 +84,7 @@ class Index extends Component
                 'name' => $this->name,
                 'type' => $this->type,
                 'unit' => $this->unit,
+                'cost' => $this->cost,
                 'price' => $this->price,
                 'stock' => 0,
                 'minimum_stock' => $this->minimum_stock,
@@ -101,6 +105,7 @@ class Index extends Component
         $this->name = $item->name;
         $this->type = $item->type;
         $this->unit = $item->unit;
+        $this->cost = $item->cost;
         $this->price = $item->price;
         $this->minimum_stock = $item->minimum_stock;
         $this->is_active = (bool) $item->is_active;

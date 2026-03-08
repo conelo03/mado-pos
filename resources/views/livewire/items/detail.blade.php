@@ -18,6 +18,10 @@
                         <span class="font-semibold">{{ $item->unit }}</span>
                     </div>
                     <div class="flex justify-between">
+                        <span>Cost Price / HPP:</span>
+                        <span class="font-semibold">Rp {{ number_format($item->cost, 0, ',', '.') }}</span>
+                    </div>
+                    <div class="flex justify-between">
                         <span>Price:</span>
                         <span class="font-semibold">Rp {{ number_format($item->price, 0, ',', '.') }}</span>
                     </div>
@@ -28,6 +32,12 @@
                     <div class="flex justify-between">
                         <span>Min Stock:</span>
                         <span class="font-semibold">{{ number_format($item->minimum_stock, 2, ',', '.') }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Track Stock:</span>
+                        <span class="badge {{ $item->is_track_stock ? 'badge-success' : 'badge-error' }}">
+                            {{ $item->is_track_stock ? 'Active' : 'Inactive' }}
+                        </span>
                     </div>
                     <div class="flex justify-between">
                         <span>Status:</span>

@@ -33,6 +33,7 @@
                     <th>Name</th>
                     <th>Type</th>
                     <th>Unit</th>
+                    <th>Cost Price / HPP</th>
                     <th>Price</th>
                     <th>Stock</th>
                     <th>Min Stock</th>
@@ -52,6 +53,7 @@
                             </span>
                         </td>
                         <td>{{ $item->unit }}</td>
+                        <td>Rp {{ number_format($item->cost, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($item->price, 0, ',', '.') }}</td>
                         <td>{{ number_format($item->stock, 2, ',', '.') }}</td>
                         <td>{{ number_format($item->minimum_stock, 2, ',', '.') }}</td><td>
@@ -86,7 +88,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="9" class="text-center">No items found</td>
+                        <td colspan="10" class="text-center">No items found</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -138,6 +140,19 @@
                             placeholder="e.g., pcs, kg, liter"
                         >
                         @error('unit') <span class="text-error text-sm">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="form-control w-full mb-4">
+                        <label class="label">
+                            <span class="label-text">Cost Price / HPP</span>
+                        </label>
+                        <input 
+                            type="number" 
+                            step="1"
+                            wire:model="cost" 
+                            class="input input-bordered w-full"
+                        >
+                        @error('cost') <span class="text-error text-sm">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="form-control w-full mb-4">
