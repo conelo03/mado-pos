@@ -1,11 +1,22 @@
 <div>
     <div class="mb-6 flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center">
-        <input 
-            type="text" 
-            wire:model.live="search" 
-            placeholder="Search invoice..." 
-            class="input input-bordered w-full lg:w-64"
-        >
+        <div class="flex gap-2 w-full lg:w-auto">
+            <input 
+                type="text" 
+                wire:model.live="search" 
+                placeholder="Search invoice..." 
+                class="input input-bordered flex-1 lg:flex-none lg:w-64"
+            >
+            <select 
+                wire:model.live="statusFilter"
+                class="select select-bordered"
+            >
+                <option value="">All Status</option>
+                <option value="PAID">PAID</option>
+                <option value="REFUND">REFUND</option>
+                <option value="VOID">VOID</option>
+            </select>
+        </div>
         <button 
             wire:click="openModal" 
             class="btn btn-primary w-full lg:w-auto"

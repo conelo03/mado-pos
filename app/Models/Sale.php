@@ -12,6 +12,7 @@ class Sale extends Model
 
     protected $fillable = [
         'invoice_no',
+        'total_cost',
         'total_price',
         'paid_amount',
         'change_amount',
@@ -22,6 +23,7 @@ class Sale extends Model
     ];
 
     protected $casts = [
+        'total_cost' => 'decimal:2',
         'total_price' => 'decimal:2',
         'paid_amount' => 'decimal:2',
         'change_amount' => 'decimal:2',

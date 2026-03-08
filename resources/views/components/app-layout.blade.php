@@ -65,13 +65,15 @@
                         Dashboard
                     </a>
                 </li>
-                @if(auth()->user()->role === 'ADMIN')
+                @if(auth()->user()->role === 'SUPERADMIN')
                     <li>
                         <a href="{{ route('users.index') }}" class="{{ request()->routeIs('users.*') ? 'active bg-primary text-primary-content' : 'text-white hover:bg-slate-700' }}">
                             <x-icon.users />
                             Users
                         </a>
                     </li>
+                @endif
+                @if(auth()->user()->role === 'ADMIN' || auth()->user()->role === 'SUPERADMIN')
                     <li>
                         <a href="{{ route('items.index') }}" class="{{ request()->routeIs('items.*') ? 'active bg-primary text-primary-content' : 'text-white hover:bg-slate-700' }}">
                             <x-icon.package />
@@ -108,7 +110,7 @@
                         Transactions
                     </a>
                 </li>
-                @if(auth()->user()->role === 'ADMIN')
+                @if(auth()->user()->role === 'SUPERADMIN')
                     <li>
                         <details @if(request()->routeIs('reports.*')) open @endif>
                             <summary class="text-white hover:bg-slate-700">

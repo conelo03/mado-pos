@@ -16,6 +16,7 @@ class Index extends Component
     use WithPagination;
 
     public $search = '';
+    public $statusFilter = '';
     public $showModal = false;
     public $showViewModal = false;
     public $editingId = null;
@@ -33,11 +34,20 @@ class Index extends Component
     public $refundId = null;
     public $cancelId = null;
 
+    public function mount()
+    {
+        $this->statusFilter = 'PAID';
+    }
+
     public function render()
     {
-        $sales = Sale::where('invoice_no', 'like', "%{$this->search}%")
-            ->latest()
-            ->paginate(10);
+        $query = Sale::where('invoice_no', 'like', "%{$this->search}%");
+        
+        if ($this->statusFilter) {
+            $query->where('status', $this->statusFilter);
+        }
+
+        $sales = $query->latest()->paginate(10);
 
         $products = Item::where('type', 'PRODUCT')
             ->where('is_active', true)
@@ -218,8 +228,12 @@ class Index extends Component
                 // Delete old items
                 SaleItem::where('sale_id', $sale->id)->delete();
 
+                // Calculate total cost
+                $totalCost = 0;
+
                 // Update sale
                 $sale->update([
+                    'total_cost' => $totalCost,
                     'total_price' => $this->total_price,
                     'paid_amount' => $paidAmount,
                     'change_amount' => $paidAmount - $this->total_price,
@@ -239,16 +253,28 @@ class Index extends Component
                         'cost_subtotal' => $item['cost_subtotal'],
                     ]);
 
+                    $totalCost += $item['cost_subtotal'];
+
                     // Reduce item stock
                     $this->reduceItemStock($item['item_id'], $item['qty'], $sale->id);
                 }
+
+                // Update total cost after adding items
+                $sale->update(['total_cost' => $totalCost]);
 
                 $this->closeModal();
                 $this->dispatch('notify', message: 'Transaction updated successfully');
             } else {
                 // Create new transaction
+                $totalCost = 0;
+
+                foreach ($this->items as $item) {
+                    $totalCost += $item['cost_subtotal'];
+                }
+
                 $sale = Sale::create([
                     'invoice_no' => 'INV-' . date('YmdHis'),
+                    'total_cost' => $totalCost,
                     'total_price' => $this->total_price,
                     'paid_amount' => $paidAmount,
                     'change_amount' => $paidAmount - $this->total_price,

@@ -15,6 +15,11 @@ class Dashboard extends Component
         $todaySales = Sale::whereDate('created_at', today())->where('status', 'PAID')->count();
         $todayRevenue = Sale::whereDate('created_at', today())->where('status', 'PAID')->sum('total_price');
         $recentTransactions = Sale::latest()->limit(10)->get();
+        $lowStockItems = Item::where('is_active', true)
+            ->where('is_track_stock', true)
+            ->whereRaw('stock < minimum_stock')
+            ->orderBy('stock')
+            ->get();
 
         return view('livewire.dashboard', [
             'totalProducts' => $totalProducts,
@@ -22,6 +27,7 @@ class Dashboard extends Component
             'todaySales' => $todaySales,
             'todayRevenue' => $todayRevenue,
             'recentTransactions' => $recentTransactions,
+            'lowStockItems' => $lowStockItems,
         ])->layout('components.app-layout', ['title' => 'Dashboard']);
     }
 }
