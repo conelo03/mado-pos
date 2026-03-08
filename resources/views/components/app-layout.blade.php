@@ -33,6 +33,9 @@
                                 <span>{{ auth()->user()->name }}</span>
                             </li>
                             <li>
+                                <a href="{{ route('change-password') }}">Change Password</a>
+                            </li>
+                            <li>
                                 <a onclick="document.getElementById('logout-form').submit()">Logout</a>
                             </li>
                         </ul>
