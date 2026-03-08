@@ -112,8 +112,8 @@ class Index extends Component
     public function calculateTotal()
     {
         $subtotal = array_sum(array_column($this->items, 'subtotal'));
-        $discount = $this->discount ?? 0;
-        $paid_amount = $this->paid_amount ?? 0;
+        $discount = (float) $this->discount ?? 0;
+        $paid_amount = (float) $this->paid_amount ?? 0;
 
         if ($discount > 0) {
             $this->total_price = $subtotal - $discount;
@@ -145,7 +145,7 @@ class Index extends Component
             return;
         }
 
-        $discount = $this->discount ?? 0;
+        $discount = (float) $this->discount ?? 0;
         $paidAmount = $this->total_price;
 
         if ($this->paid_amount > 0) {
