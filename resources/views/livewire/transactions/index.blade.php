@@ -116,14 +116,16 @@
                         </div>
 
                         <h4 class="font-semibold mt-6 mb-3">Items</h4>
-                        <div class="border rounded-lg overflow-hidden">
+                        <div class="border rounded-lg overflow-hidden overflow-x-auto">
                             <table class="table table-sm w-full">
                                 <thead>
                                     <tr>
                                         <th>Product</th>
                                         <th>Price</th>
+                                        <th>Cost</th>
                                         <th>Qty</th>
                                         <th>Subtotal</th>
+                                        <th>Cost Subtotal</th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -132,6 +134,16 @@
                                         <tr>
                                             <td>{{ $item['product_name'] }}</td>
                                             <td>Rp {{ number_format($item['price'], 0, ',', '.') }}</td>
+                                            <td>
+                                                <input 
+                                                    type="number" 
+                                                    step="1"
+                                                    wire:model.live="items.{{ $index }}.cost"
+                                                    wire:change="updateCost({{ $index }}, $event.target.value)"
+                                                    class="input input-bordered input-sm w-20 text-center"
+                                                    min="0"
+                                                >
+                                            </td>
                                             <td>
                                                 <div class="flex gap-1 items-center">
                                                     <button 
@@ -156,6 +168,7 @@
                                                 </div>
                                             </td>
                                             <td>Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
+                                            <td>Rp {{ number_format($item['cost_subtotal'], 0, ',', '.') }}</td>
                                             <td>
                                                 <button 
                                                     wire:click="removeItem({{ $index }})"
@@ -167,7 +180,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="5" class="text-center">No items added</td>
+                                            <td colspan="7" class="text-center">No items added</td>
                                         </tr>
                                     @endforelse
                                 </tbody>

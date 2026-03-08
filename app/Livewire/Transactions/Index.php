@@ -64,13 +64,16 @@ class Index extends Component
         if ($existingKey !== false) {
             $this->items[$existingKey]['qty'] += 1;
             $this->items[$existingKey]['subtotal'] = $this->items[$existingKey]['price'] * $this->items[$existingKey]['qty'];
+            $this->items[$existingKey]['cost_subtotal'] = $this->items[$existingKey]['cost'] * $this->items[$existingKey]['qty'];
         } else {
             $this->items[] = [
                 'item_id' => $productId,
                 'product_name' => $product->name,
                 'price' => $product->price,
+                'cost' => $product->cost,
                 'qty' => 1,
                 'subtotal' => $product->price,
+                'cost_subtotal' => $product->cost,
             ];
         }
 
@@ -89,7 +92,15 @@ class Index extends Component
         if ($qty > 0) {
             $this->items[$index]['qty'] = $qty;
             $this->items[$index]['subtotal'] = $this->items[$index]['price'] * $qty;
+            $this->items[$index]['cost_subtotal'] = $this->items[$index]['cost'] * $qty;
         }
+        $this->calculateTotal();
+    }
+
+    public function updateCost($index, $cost)
+    {
+        $this->items[$index]['cost'] = $cost;
+        $this->items[$index]['cost_subtotal'] = $cost * $this->items[$index]['qty'];
         $this->calculateTotal();
     }
 
@@ -97,6 +108,7 @@ class Index extends Component
     {
         $this->items[$index]['qty'] += 1;
         $this->items[$index]['subtotal'] = $this->items[$index]['price'] * $this->items[$index]['qty'];
+        $this->items[$index]['cost_subtotal'] = $this->items[$index]['cost'] * $this->items[$index]['qty'];
         $this->calculateTotal();
     }
 
@@ -105,6 +117,7 @@ class Index extends Component
         if ($this->items[$index]['qty'] > 1) {
             $this->items[$index]['qty'] -= 1;
             $this->items[$index]['subtotal'] = $this->items[$index]['price'] * $this->items[$index]['qty'];
+            $this->items[$index]['cost_subtotal'] = $this->items[$index]['cost'] * $this->items[$index]['qty'];
             $this->calculateTotal();
         }
     }
@@ -185,8 +198,10 @@ class Index extends Component
                         'sale_id' => $sale->id,
                         'item_id' => $item['item_id'],
                         'price' => $item['price'],
+                        'cost' => $item['cost'],
                         'qty' => $item['qty'],
                         'subtotal' => $item['subtotal'],
+                        'cost_subtotal' => $item['cost_subtotal'],
                     ]);
 
                     // Reduce item stock
@@ -212,8 +227,10 @@ class Index extends Component
                         'sale_id' => $sale->id,
                         'item_id' => $item['item_id'],
                         'price' => $item['price'],
+                        'cost' => $item['cost'],
                         'qty' => $item['qty'],
                         'subtotal' => $item['subtotal'],
+                        'cost_subtotal' => $item['cost_subtotal'],
                     ]);
 
                     // Reduce item stock
@@ -273,8 +290,10 @@ class Index extends Component
                 'item_id' => $item->item_id,
                 'product_name' => $item->item->name,
                 'price' => $item->price,
+                'cost' => $item->cost,
                 'qty' => $item->qty,
                 'subtotal' => $item->subtotal,
+                'cost_subtotal' => $item->cost_subtotal,
             ];
         })->toArray();
 

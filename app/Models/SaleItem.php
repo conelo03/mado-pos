@@ -10,12 +10,14 @@ class SaleItem extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['sale_id', 'item_id', 'price', 'qty', 'subtotal'];
+    protected $fillable = ['sale_id', 'item_id', 'price', 'cost', 'qty', 'subtotal', 'cost_subtotal'];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'cost' => 'decimal:2',
         'qty' => 'decimal:2',
         'subtotal' => 'decimal:2',
+        'cost_subtotal' => 'decimal:2',
     ];
 
     public function sale(): BelongsTo
