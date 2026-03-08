@@ -43,7 +43,8 @@
                     <th>Invoice</th>
                     <th>Date</th>
                     <th>Status</th>
-                    <th>Total</th>
+                    <th>Total Cost</th>
+                    <th>Total Revenue</th>
                 </tr>
             </thead>
             <tbody>
@@ -57,17 +58,19 @@
                                 {{ $sale->status }}
                             </div>
                         </td>
+                        <td>Rp {{ number_format($sale->total_cost, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($sale->total_price, 0, ',', '.') }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="text-center">No data found</td>
+                        <td colspan="6" class="text-center">No data found</td>
                     </tr>
                 @endforelse
             </tbody>
             <tfoot>
                 <tr class="font-bold bg-base-200">
-                    <td colspan="4">Total Revenue</td>
+                    <td colspan="4">Total</td>
+                    <td>Rp {{ number_format($totalCost, 0, ',', '.') }}</td>
                     <td>Rp {{ number_format($totalRevenue, 0, ',', '.') }}</td>
                 </tr>
             </tfoot>

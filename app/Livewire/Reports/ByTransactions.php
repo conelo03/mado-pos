@@ -43,10 +43,12 @@ class ByTransactions extends Component
         }
 
         $totalRevenue = $totalQuery->sum('total_price');
+        $totalCost = $totalQuery->sum('total_cost');
 
         return view('livewire.reports.by-transactions', [
             'sales' => $sales,
             'totalRevenue' => $totalRevenue,
+            'totalCost' => $totalCost,
         ])->layout('components.app-layout', ['title' => 'Sales Report - By Transactions']);
     }
 }

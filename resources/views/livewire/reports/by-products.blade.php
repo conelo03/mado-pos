@@ -43,8 +43,8 @@
                     <th style="width: 50px;">#</th>
                     <th>Product Name</th>
                     <th>Qty</th>
-                    <th>Subtotal</th>
                     <th>Cost Subtotal</th>
+                    <th>Subtotal</th>
                 </tr>
             </thead>
             <tbody>
@@ -53,8 +53,8 @@
                         <td>{{ $index + 1 }}</td>
                         <td>{{ $item['product_name'] }}</td>
                         <td>{{ $item['qty'] }}</td>
-                        <td>Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($item['cost_subtotal'], 0, ',', '.') }}</td>
+                        <td>Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
                     </tr>
                 @empty
                     <tr>
@@ -67,8 +67,8 @@
                     <tr class="font-bold bg-base-200">
                         <td colspan="2">Total</td>
                         <td>{{ $totalQty }}</td>
-                        <td>Rp {{ number_format($totalSubtotal, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($totalCostSubtotal, 0, ',', '.') }}</td>
+                        <td>Rp {{ number_format($totalSubtotal, 0, ',', '.') }}</td>
                     </tr>
                 </tfoot>
             @endif
