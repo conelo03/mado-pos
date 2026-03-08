@@ -55,7 +55,7 @@
                         <td>Rp {{ number_format($item->price, 0, ',', '.') }}</td>
                         <td>{{ number_format($item->stock, 2, ',', '.') }}</td>
                         <td>{{ number_format($item->minimum_stock, 2, ',', '.') }}</td><td>
-                            <div class="badge {{ $item->is_active ? 'badge-success' : 'badge-error' }}">
+                            <div class="badge {{ $item->is_track_stock ? 'badge-success' : 'badge-error' }}">
                                 {{ $item->is_track_stock ? 'Active' : 'Inactive' }}
                             </div>
                         </td>
