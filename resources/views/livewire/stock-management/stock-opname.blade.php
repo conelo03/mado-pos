@@ -137,11 +137,20 @@
                     </div>
 
                     <div class="modal-action">
-                        <button type="button" wire:click="closeModal" class="btn">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="button" wire:click="closeModal" class="btn">
+                            <x-icon.x />
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <x-icon.check />
+                            Save
+                        </button>
                     </div>
                 </form>
             </div>
+            <form method="dialog" class="modal-backdrop">
+                <button wire:click="closeModal">close</button>
+            </form>
         </div>
     @endif
 

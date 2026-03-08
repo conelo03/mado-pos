@@ -52,6 +52,7 @@ class StockInput extends Component
     public function closeModal()
     {
         $this->showModal = false;
+        $this->reset(['editingId', 'item_id', 'qty', 'note']);
     }
 
     public function save()
