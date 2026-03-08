@@ -43,30 +43,36 @@
                             <div class="flex gap-1">
                                 <button 
                                     onclick="window.open('{{ route('transactions.print', $sale->id) }}', '_blank')" 
-                                    class="btn btn-xs btn-info" title="Print"
+                                    class="btn btn-xs btn-light" title="Print"
                                 >
                                     <x-icon.printer />
                                 </button>
                                 <button 
+                                    wire:click="openViewModal({{ $sale->id }})" 
+                                    class="btn btn-xs btn-info" title="View"
+                                >
+                                    <x-icon.eye />
+                                </button>
+                                {{-- <button 
                                     wire:click="edit({{ $sale->id }})" 
                                     class="btn btn-xs btn-warning" title="Edit"
                                 >
                                     <x-icon.pencil />
-                                </button>
+                                </button> --}}
                                 @if($sale->status === 'PAID')
                                     <button 
                                         wire:click="confirmRefund({{ $sale->id }})" 
-                                        class="btn btn-xs btn-info" title="Refund"
+                                        class="btn btn-xs btn-warning" title="Refund"
                                     >
                                         <x-icon.arrow-uturn-left />
                                     </button>
+                                    <button 
+                                        wire:click="confirmCancel({{ $sale->id }})" 
+                                        class="btn btn-xs btn-error" title="Cancel"
+                                    >
+                                        <x-icon.x />
+                                    </button>
                                 @endif
-                                <button 
-                                    wire:click="confirmDelete({{ $sale->id }})" 
-                                    class="btn btn-xs btn-error" title="Delete"
-                                >
-                                    <x-icon.trash />
-                                </button>
                             </div>
                         </td>
                     </tr>
@@ -116,16 +122,14 @@
                         </div>
 
                         <h4 class="font-semibold mt-6 mb-3">Items</h4>
-                        <div class="border rounded-lg overflow-hidden overflow-x-auto">
+                        <div class="border rounded-lg overflow-hidden">
                             <table class="table table-sm w-full">
                                 <thead>
                                     <tr>
                                         <th>Product</th>
                                         <th>Price</th>
-                                        <th>Cost</th>
                                         <th>Qty</th>
                                         <th>Subtotal</th>
-                                        <th>Cost Subtotal</th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -134,16 +138,6 @@
                                         <tr>
                                             <td>{{ $item['product_name'] }}</td>
                                             <td>Rp {{ number_format($item['price'], 0, ',', '.') }}</td>
-                                            <td>
-                                                <input 
-                                                    type="number" 
-                                                    step="1"
-                                                    wire:model.live="items.{{ $index }}.cost"
-                                                    wire:change="updateCost({{ $index }}, $event.target.value)"
-                                                    class="input input-bordered input-sm w-20 text-center"
-                                                    min="0"
-                                                >
-                                            </td>
                                             <td>
                                                 <div class="flex gap-1 items-center">
                                                     <button 
@@ -168,7 +162,6 @@
                                                 </div>
                                             </td>
                                             <td>Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
-                                            <td>Rp {{ number_format($item['cost_subtotal'], 0, ',', '.') }}</td>
                                             <td>
                                                 <button 
                                                     wire:click="removeItem({{ $index }})"
@@ -180,7 +173,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="7" class="text-center">No items added</td>
+                                            <td colspan="5" class="text-center">No items added</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -277,4 +270,111 @@
         cancelText="Cancel"
         onConfirm="$wire.refund({{ $refundId ?? 'null' }})"
     />
+
+    <!-- Confirm Cancel Dialog -->
+    <x-confirm-cancel-dialog 
+        title="Cancel Transaction"
+        message="Are you sure you want to cancel this transaction? Stock will be restored and status will be set to VOID."
+        confirmText="Cancel"
+        cancelText="Close"
+        onConfirm="$wire.cancel({{ $cancelId ?? 'null' }})"
+    />
+
+    <!-- View Modal -->
+    @if($showViewModal)
+        <div class="modal modal-open" onclick="event.target === this || event.stopPropagation()">
+            <div class="modal-box w-11/12 max-w-2xl">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="font-bold text-lg">{{ $viewInvoiceNo }}</h3>
+                        <p class="text-sm text-base-content/60">{{ $viewDate }}</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-6">
+                    <!-- Items -->
+                    <div>
+                        <h4 class="font-semibold mb-3">Items</h4>
+                        <div class="border rounded-lg overflow-hidden">
+                            <table class="table table-sm w-full">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Price</th>
+                                        <th>Qty</th>
+                                        <th>Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($viewItems as $item)
+                                        <tr>
+                                            <td>{{ $item['product_name'] }}</td>
+                                            <td>Rp {{ number_format($item['price'], 0, ',', '.') }}</td>
+                                            <td>{{ $item['qty'] }}</td>
+                                            <td>Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="4" class="text-center">No items</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="bg-base-200 rounded-lg p-4 space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span>Subtotal:</span>
+                            <span>Rp {{ number_format(array_sum(array_column($viewItems, 'subtotal')), 0, ',', '.') }}</span>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <span>Discount:</span>
+                            <span>Rp {{ number_format($discount, 0, ',', '.') }}</span>
+                        </div>
+
+                        <div class="divider my-2"></div>
+
+                        <div class="flex justify-between font-semibold">
+                            <span>Total:</span>
+                            <span>Rp {{ number_format($total_price, 0, ',', '.') }}</span>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <span>Paid Amount:</span>
+                            <span>Rp {{ number_format($paid_amount, 0, ',', '.') }}</span>
+                        </div>
+
+                        <div class="divider my-2"></div>
+
+                        <div class="flex justify-between font-semibold">
+                            <span>Change:</span>
+                            <span>Rp {{ number_format($change_amount, 0, ',', '.') }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-action mt-6">
+                    <button 
+                        type="button"
+                        wire:click="closeViewModal" 
+                        class="btn btn-sm"
+                    >
+                        <x-icon.x />
+                        Close
+                    </button>
+                    <button 
+                        type="button"
+                        onclick="window.open('{{ route('transactions.print', $viewingId) }}', '_blank')" 
+                        class="btn btn-primary btn-sm"
+                    >
+                        <x-icon.printer />
+                        Print
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>

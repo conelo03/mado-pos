@@ -42,11 +42,13 @@ class ByProducts extends Component
                 'product_name' => $group->first()->item->name,
                 'qty' => $group->sum('qty'),
                 'subtotal' => $group->sum('subtotal'),
+                'cost_subtotal' => $group->sum('cost_subtotal'),
             ];
         })->values();
 
         $totalQty = $report->sum('qty');
         $totalSubtotal = $report->sum('subtotal');
+        $totalCostSubtotal = $report->sum('cost_subtotal');
 
         $products = Item::where('type', 'PRODUCT')->where('is_active', true)->orderBy('name')->get();
 
@@ -54,6 +56,7 @@ class ByProducts extends Component
             'report' => $report,
             'totalQty' => $totalQty,
             'totalSubtotal' => $totalSubtotal,
+            'totalCostSubtotal' => $totalCostSubtotal,
             'products' => $products,
         ])->layout('components.app-layout', ['title' => 'Sales Report - By Products']);
     }

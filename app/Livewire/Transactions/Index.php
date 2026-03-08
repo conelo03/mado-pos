@@ -17,8 +17,13 @@ class Index extends Component
 
     public $search = '';
     public $showModal = false;
+    public $showViewModal = false;
     public $editingId = null;
+    public $viewingId = null;
     public $items = [];
+    public $viewItems = [];
+    public $viewInvoiceNo = '';
+    public $viewDate = '';
     public $discount = null;
     public $paid_amount = null;
     public $total_price = 0;
@@ -26,6 +31,7 @@ class Index extends Component
     public $productSearch = '';
     public $deleteId = null;
     public $refundId = null;
+    public $cancelId = null;
 
     public function render()
     {
@@ -53,6 +59,35 @@ class Index extends Component
     public function closeModal()
     {
         $this->showModal = false;
+    }
+
+    public function openViewModal($id)
+    {
+        $sale = Sale::with('items')->find($id);
+        $this->viewingId = $id;
+        $this->viewInvoiceNo = $sale->invoice_no;
+        $this->viewDate = $sale->created_at->format('d M Y H:i');
+        
+        $this->viewItems = $sale->items->map(function ($item) {
+            return [
+                'product_name' => $item->item->name,
+                'price' => $item->price,
+                'qty' => $item->qty,
+                'subtotal' => $item->subtotal,
+            ];
+        })->toArray();
+
+        $this->discount = $sale->discount;
+        $this->paid_amount = $sale->paid_amount;
+        $this->total_price = $sale->total_price;
+        $this->change_amount = $sale->change_amount;
+        
+        $this->showViewModal = true;
+    }
+
+    public function closeViewModal()
+    {
+        $this->showViewModal = false;
     }
 
     public function addItem($productId)
@@ -317,6 +352,12 @@ class Index extends Component
         $this->dispatch('confirm-refund-dialog');
     }
 
+    public function confirmCancel($id)
+    {
+        $this->cancelId = $id;
+        $this->dispatch('confirm-cancel-dialog');
+    }
+
     public function delete($id)
     {
         DB::transaction(function () use ($id) {
@@ -362,5 +403,27 @@ class Index extends Component
         $sale->update(['status' => 'REFUND']);
         $this->refundId = null;
         $this->dispatch('notify', message: 'Transaction refunded successfully');
+    }
+
+    public function cancel($id)
+    {
+        DB::transaction(function () use ($id) {
+            $sale = Sale::find($id);
+            
+            // Restore item stock
+            foreach ($sale->items as $item) {
+                $this->restoreItemStock($item->item_id, $item->qty, $sale->id);
+            }
+
+            // Delete stock movements
+            StockMovement::where('reference_id', $sale->id)
+                ->where('reference_type', 'SALE')
+                ->delete();
+
+            $sale->update(['status' => 'VOID']);
+        });
+
+        $this->cancelId = null;
+        $this->dispatch('notify', message: 'Transaction cancelled successfully');
     }
 }

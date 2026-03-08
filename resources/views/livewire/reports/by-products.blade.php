@@ -44,6 +44,7 @@
                     <th>Product Name</th>
                     <th>Qty</th>
                     <th>Subtotal</th>
+                    <th>Cost Subtotal</th>
                 </tr>
             </thead>
             <tbody>
@@ -53,10 +54,11 @@
                         <td>{{ $item['product_name'] }}</td>
                         <td>{{ $item['qty'] }}</td>
                         <td>Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
+                        <td>Rp {{ number_format($item['cost_subtotal'], 0, ',', '.') }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="text-center">No data found</td>
+                        <td colspan="5" class="text-center">No data found</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -66,6 +68,7 @@
                         <td colspan="2">Total</td>
                         <td>{{ $totalQty }}</td>
                         <td>Rp {{ number_format($totalSubtotal, 0, ',', '.') }}</td>
+                        <td>Rp {{ number_format($totalCostSubtotal, 0, ',', '.') }}</td>
                     </tr>
                 </tfoot>
             @endif
