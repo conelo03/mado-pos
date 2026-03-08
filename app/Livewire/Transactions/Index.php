@@ -146,7 +146,11 @@ class Index extends Component
         }
 
         $discount = $this->discount ?? 0;
-        $paidAmount = $this->paid_amount ?? $this->total_price;
+        $paidAmount = $this->total_price;
+
+        if ($this->paid_amount > 0) {
+            $paidAmount = $this->paid_amount;
+        }
 
         DB::transaction(function () use ($discount, $paidAmount) {
             if ($this->editingId) {
