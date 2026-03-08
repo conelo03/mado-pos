@@ -20,6 +20,19 @@
                 class="input input-bordered w-full"
             >
         </div>
+        <div class="flex-1">
+            <label class="label">
+                <span class="label-text">Status</span>
+            </label>
+            <select 
+                wire:model.live="status" 
+                class="select select-bordered w-full"
+            >
+                <option value="PAID">PAID</option>
+                <option value="REFUND">REFUND</option>
+                <option value="">All Status</option>
+            </select>
+        </div>
     </div>
 
     <div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
@@ -29,6 +42,7 @@
                     <th style="width: 50px;">#</th>
                     <th>Invoice</th>
                     <th>Date</th>
+                    <th>Status</th>
                     <th>Total</th>
                 </tr>
             </thead>
@@ -38,17 +52,22 @@
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $sale->invoice_no }}</td>
                         <td>{{ $sale->created_at->format('d/m/Y H:i') }}</td>
+                        <td>
+                            <div class="badge {{ $sale->status === 'PAID' ? 'badge-success' : ($sale->status === 'REFUND' ? 'badge-warning' : 'badge-error') }}">
+                                {{ $sale->status }}
+                            </div>
+                        </td>
                         <td>Rp {{ number_format($sale->total_price, 0, ',', '.') }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="text-center">No data found</td>
+                        <td colspan="5" class="text-center">No data found</td>
                     </tr>
                 @endforelse
             </tbody>
             <tfoot>
                 <tr class="font-bold bg-base-200">
-                    <td colspan="3">Total Revenue</td>
+                    <td colspan="4">Total Revenue</td>
                     <td>Rp {{ number_format($totalRevenue, 0, ',', '.') }}</td>
                 </tr>
             </tfoot>

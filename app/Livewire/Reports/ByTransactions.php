@@ -12,6 +12,7 @@ class ByTransactions extends Component
 
     public $startDate = '';
     public $endDate = '';
+    public $status = 'PAID';
 
     public function mount()
     {
@@ -21,18 +22,27 @@ class ByTransactions extends Component
 
     public function render()
     {
-        $sales = Sale::whereBetween('created_at', [
+        $query = Sale::whereBetween('created_at', [
             $this->startDate . ' 00:00:00',
             $this->endDate . ' 23:59:59'
-        ])
-        ->where('status', 'PAID')
-        ->orderBy('created_at', 'desc')
-        ->paginate(10);
+        ]);
 
-        $totalRevenue = Sale::whereBetween('created_at', [
+        if ($this->status) {
+            $query->where('status', $this->status);
+        }
+
+        $sales = $query->orderBy('created_at', 'desc')->paginate(10);
+
+        $totalQuery = Sale::whereBetween('created_at', [
             $this->startDate . ' 00:00:00',
             $this->endDate . ' 23:59:59'
-        ])->where('status', 'PAID')->sum('total_price');
+        ]);
+
+        if ($this->status) {
+            $totalQuery->where('status', $this->status);
+        }
+
+        $totalRevenue = $totalQuery->sum('total_price');
 
         return view('livewire.reports.by-transactions', [
             'sales' => $sales,
