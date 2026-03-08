@@ -8,10 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('boms', function (Blueprint $table) {
+        Schema::create('item_boms', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
-            $table->foreignId('raw_material_id')->constrained('raw_materials')->cascadeOnDelete();
+            $table->foreignId('product_id')->constrained('items')->onDelete('cascade');
+            $table->foreignId('material_id')->constrained('items')->onDelete('cascade');
             $table->decimal('qty', 12, 2);
             $table->timestamps();
             $table->softDeletes();
@@ -20,6 +20,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('boms');
+        Schema::dropIfExists('item_boms');
     }
 };

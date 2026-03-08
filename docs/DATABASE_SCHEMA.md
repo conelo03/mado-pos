@@ -1,357 +1,578 @@
-# MADO POS - Database Schema
+# Database Schema
 
-## Tables Overview
+## Overview
+
+The MADO POS system uses a relational database with the following main tables:
+
+```
+users
+├── sales
+│   └── sale_items
+│       └── items
+│           ├── item_boms
+│           │   └── items (materials)
+│           └── stock_movements
+└── stock_movements
+```
+
+---
+
+## Tables
 
 ### 1. users
-User authentication dan tracking
+Stores user account information.
 
 ```sql
-id (PK)
-name
-email (UNIQUE)
-email_verified_at
-password
-remember_token
-created_at
-updated_at
-deleted_at (soft delete)
+CREATE TABLE users (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    email_verified_at TIMESTAMP NULL,
+    password VARCHAR(255) NOT NULL,
+    role ENUM('ADMIN', 'USER') DEFAULT 'USER',
+    remember_token VARCHAR(100) NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    deleted_at TIMESTAMP NULL
+);
 ```
 
-### 2. products
-Master data produk
+**Fields:**
+- `id` - Unique identifier
+- `name` - User's full name
+- `email` - User's email address (unique)
+- `email_verified_at` - Email verification timestamp
+- `password` - Hashed password
+- `role` - User role (ADMIN or USER)
+- `remember_token` - Remember me token
+- `created_at` - Creation timestamp
+- `updated_at` - Last update timestamp
+- `deleted_at` - Soft delete timestamp
 
-```sql
-id (PK)
-name
-price (decimal 12,2)
-is_active (boolean, default: true)
-created_by (FK → users.id)
-updated_by (FK → users.id)
-created_at
-updated_at
-deleted_at (soft delete)
-```
+**Indexes:**
+- PRIMARY KEY: id
+- UNIQUE: email
 
 **Relationships:**
-- HasMany: boms
-- HasMany: sale_items
-- BelongsToMany: raw_materials (through boms)
+- HasMany: sales (created_by)
+- HasMany: stock_movements (created_by)
 
-### 3. raw_materials
-Master data bahan baku
+---
+
+### 2. items
+Unified table for products and raw materials.
 
 ```sql
-id (PK)
-name
-unit (e.g., kg, liter, pcs)
-stock (decimal 12,2, default: 0)
-minimum_stock (decimal 12,2, default: 0)
-created_by (FK → users.id)
-updated_by (FK → users.id)
-created_at
-updated_at
-deleted_at (soft delete)
+CREATE TABLE items (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    type ENUM('PRODUCT', 'RAW_MATERIAL') NOT NULL,
+    unit VARCHAR(50) NOT NULL,
+    price DECIMAL(12, 2) DEFAULT 0,
+    stock DECIMAL(12, 2) DEFAULT 0,
+    minimum_stock DECIMAL(12, 2) DEFAULT 0,
+    is_active BOOLEAN DEFAULT TRUE,
+    is_track_stock BOOLEAN DEFAULT TRUE,
+    created_by BIGINT NOT NULL,
+    updated_by BIGINT NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    deleted_at TIMESTAMP NULL,
+    FOREIGN KEY (created_by) REFERENCES users(id),
+    FOREIGN KEY (updated_by) REFERENCES users(id)
+);
 ```
 
+**Fields:**
+- `id` - Unique identifier
+- `name` - Item name
+- `type` - PRODUCT or RAW_MATERIAL
+- `unit` - Unit of measurement (pcs, kg, liter, etc.)
+- `price` - Item price (mainly for products)
+- `stock` - Current stock quantity
+- `minimum_stock` - Minimum stock threshold for alerts
+- `is_active` - Whether item is available for use
+- `is_track_stock` - Stock tracking mode:
+  - true: Direct stock tracking
+  - false: BOM-based stock tracking
+- `created_by` - User who created the item
+- `updated_by` - User who last updated the item
+- `created_at` - Creation timestamp
+- `updated_at` - Last update timestamp
+- `deleted_at` - Soft delete timestamp
+
+**Indexes:**
+- PRIMARY KEY: id
+- FOREIGN KEY: created_by
+- FOREIGN KEY: updated_by
+
 **Relationships:**
-- HasMany: boms
+- HasMany: item_boms (product_id)
 - HasMany: stock_movements
-- HasMany: stock_inputs
-- HasMany: stock_opnames
-- BelongsToMany: products (through boms)
+- BelongsTo: users (created_by)
+- BelongsTo: users (updated_by)
 
-### 4. boms (Bill of Materials)
-Komposisi bahan baku per produk
+---
+
+### 3. item_boms
+Bill of Materials - defines product composition.
 
 ```sql
-id (PK)
-product_id (FK → products.id)
-raw_material_id (FK → raw_materials.id)
-qty (decimal 12,2) - quantity per product
-created_at
-updated_at
-deleted_at (soft delete)
+CREATE TABLE item_boms (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    product_id BIGINT NOT NULL,
+    material_id BIGINT NOT NULL,
+    qty DECIMAL(12, 2) NOT NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    deleted_at TIMESTAMP NULL,
+    FOREIGN KEY (product_id) REFERENCES items(id) ON DELETE CASCADE,
+    FOREIGN KEY (material_id) REFERENCES items(id) ON DELETE CASCADE
+);
 ```
 
-**Relationships:**
-- BelongsTo: product
-- BelongsTo: raw_material
+**Fields:**
+- `id` - Unique identifier
+- `product_id` - Foreign key to items (the product)
+- `material_id` - Foreign key to items (the raw material)
+- `qty` - Quantity of material needed per product unit
+- `created_at` - Creation timestamp
+- `updated_at` - Last update timestamp
+- `deleted_at` - Soft delete timestamp
 
-**Example:**
-- Product: Cake, Raw Material: Flour, Qty: 2 (means 1 cake needs 2kg flour)
+**Indexes:**
+- PRIMARY KEY: id
+- FOREIGN KEY: product_id
+- FOREIGN KEY: material_id
+
+**Relationships:**
+- BelongsTo: items (product_id)
+- BelongsTo: items (material_id)
+
+**Constraints:**
+- product_id must reference an item with type = PRODUCT
+- material_id must reference an item with type = RAW_MATERIAL
+- qty must be > 0
+
+---
+
+### 4. stock_movements
+Audit trail for all stock changes.
+
+```sql
+CREATE TABLE stock_movements (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    item_id BIGINT NOT NULL,
+    type ENUM('IN', 'OUT') NOT NULL,
+    qty DECIMAL(12, 2) NOT NULL,
+    reference_id BIGINT NULL,
+    reference_type ENUM('PURCHASE', 'SALE', 'ADJUSTMENT', 'WASTE') NULL,
+    date DATE NOT NULL,
+    note TEXT NULL,
+    created_by BIGINT NOT NULL,
+    updated_by BIGINT NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users(id),
+    FOREIGN KEY (updated_by) REFERENCES users(id)
+);
+```
+
+**Fields:**
+- `id` - Unique identifier
+- `item_id` - Foreign key to items
+- `type` - IN (stock increase) or OUT (stock decrease)
+- `qty` - Quantity moved (always positive)
+- `reference_id` - ID of related transaction/operation
+- `reference_type` - Type of reference:
+  - PURCHASE: Stock input
+  - SALE: Sales transaction
+  - ADJUSTMENT: Stock adjustment
+  - WASTE: Stock waste/loss
+- `date` - Date of movement
+- `note` - Optional notes
+- `created_by` - User who created the movement
+- `updated_by` - User who updated the movement
+- `created_at` - Creation timestamp
+- `updated_at` - Last update timestamp
+
+**Indexes:**
+- PRIMARY KEY: id
+- FOREIGN KEY: item_id
+- FOREIGN KEY: created_by
+- FOREIGN KEY: updated_by
+- INDEX: (item_id, date) - For efficient date range queries
+
+**Relationships:**
+- BelongsTo: items
+- BelongsTo: users (created_by)
+- BelongsTo: users (updated_by)
+
+**Constraints:**
+- qty must be > 0
+- type must be IN or OUT
+- reference_type must match the operation type
+
+---
 
 ### 5. sales
-Transaksi penjualan
+Sales transaction records.
 
 ```sql
-id (PK)
-invoice_no (UNIQUE) - format: INV-YYYYMMDDHHmmss-XXXX
-total_price (decimal 12,2)
-paid_amount (decimal 12,2, nullable)
-change_amount (decimal 12,2, nullable)
-discount (decimal 12,2, default: 0)
-status (enum: PAID, VOID, REFUND)
-created_by (FK → users.id)
-updated_by (FK → users.id)
-created_at
-updated_at
-deleted_at (soft delete)
+CREATE TABLE sales (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    invoice_no VARCHAR(255) UNIQUE NOT NULL,
+    total_price DECIMAL(12, 2) NOT NULL,
+    paid_amount DECIMAL(12, 2) NOT NULL,
+    change_amount DECIMAL(12, 2) NOT NULL,
+    discount DECIMAL(12, 2) DEFAULT 0,
+    status ENUM('PAID', 'VOID', 'REFUND') DEFAULT 'PAID',
+    created_by BIGINT NOT NULL,
+    updated_by BIGINT NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    deleted_at TIMESTAMP NULL,
+    FOREIGN KEY (created_by) REFERENCES users(id),
+    FOREIGN KEY (updated_by) REFERENCES users(id)
+);
 ```
 
-**Relationships:**
-- HasMany: items (sale_items)
+**Fields:**
+- `id` - Unique identifier
+- `invoice_no` - Unique invoice number (format: INV-YYYYMMDDHHmmss)
+- `total_price` - Total transaction amount after discount
+- `paid_amount` - Amount paid by customer
+- `change_amount` - Change given to customer
+- `discount` - Discount amount applied
+- `status` - Transaction status:
+  - PAID: Completed transaction
+  - VOID: Cancelled transaction
+  - REFUND: Refunded transaction
+- `created_by` - User who created the transaction
+- `updated_by` - User who updated the transaction
+- `created_at` - Creation timestamp
+- `updated_at` - Last update timestamp
+- `deleted_at` - Soft delete timestamp
 
-**Status:**
-- PAID: Normal transaction
-- VOID: Deleted transaction
-- REFUND: Refunded transaction
+**Indexes:**
+- PRIMARY KEY: id
+- UNIQUE: invoice_no
+- FOREIGN KEY: created_by
+- FOREIGN KEY: updated_by
+
+**Relationships:**
+- HasMany: sale_items
+- BelongsTo: users (created_by)
+- BelongsTo: users (updated_by)
+
+**Constraints:**
+- total_price = subtotal - discount
+- change_amount = paid_amount - total_price
+- status must be PAID, VOID, or REFUND
+
+---
 
 ### 6. sale_items
-Detail item dalam transaksi
+Individual items in a sales transaction.
 
 ```sql
-id (PK)
-sale_id (FK → sales.id)
-product_id (FK → products.id)
-price (decimal 12,2) - price at time of sale
-qty (decimal 12,2)
-subtotal (decimal 12,2) - price × qty
-created_at
-updated_at
-deleted_at (soft delete)
+CREATE TABLE sale_items (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    sale_id BIGINT NOT NULL,
+    item_id BIGINT NOT NULL,
+    price DECIMAL(12, 2) NOT NULL,
+    qty DECIMAL(12, 2) NOT NULL,
+    subtotal DECIMAL(12, 2) NOT NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    deleted_at TIMESTAMP NULL,
+    FOREIGN KEY (sale_id) REFERENCES sales(id) ON DELETE CASCADE,
+    FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE
+);
 ```
 
+**Fields:**
+- `id` - Unique identifier
+- `sale_id` - Foreign key to sales
+- `item_id` - Foreign key to items
+- `price` - Price per unit at time of sale
+- `qty` - Quantity sold
+- `subtotal` - price × qty
+- `created_at` - Creation timestamp
+- `updated_at` - Last update timestamp
+- `deleted_at` - Soft delete timestamp
+
+**Indexes:**
+- PRIMARY KEY: id
+- FOREIGN KEY: sale_id
+- FOREIGN KEY: item_id
+
 **Relationships:**
-- BelongsTo: sale
-- BelongsTo: product
+- BelongsTo: sales
+- BelongsTo: items
 
-### 7. raw_material_stock_movements
-Audit trail perubahan stok
+**Constraints:**
+- subtotal = price × qty
+- qty must be > 0
+- price must be >= 0
 
-```sql
-id (PK)
-raw_material_id (FK → raw_materials.id)
-type (enum: PURCHASE, SALE, ADJUSTMENT, WASTE)
-qty (decimal 12,2) - absolute quantity
-reference_id (string, nullable) - ID dari source (sale_id, stock_input_id, etc)
-reference_type (enum: PURCHASE, SALE, ADJUSTMENT, WASTE, nullable)
-created_by (FK → users.id)
-updated_by (FK → users.id)
-created_at
-updated_at
-deleted_at (soft delete)
+---
+
+## Data Flow
+
+### Sales Transaction Flow
+
 ```
-
-**Relationships:**
-- BelongsTo: raw_material
-- BelongsTo: created_by (user)
-
-**Type Mapping:**
-- PURCHASE: From stock_input
-- SALE: From transaction
-- ADJUSTMENT: From stock_opname (positive)
-- WASTE: From stock_opname (negative)
-
-### 8. raw_material_stock_inputs
-Input stok bahan baku
-
-```sql
-id (PK)
-raw_material_id (FK → raw_materials.id)
-qty (decimal 12,2)
-date (date)
-note (text, nullable)
-created_by (FK → users.id)
-updated_by (FK → users.id)
-created_at
-updated_at
-deleted_at (soft delete)
+1. User creates sale
+   ↓
+2. For each item in sale:
+   ├─ If is_track_stock = true:
+   │  ├─ Decrement item.stock by qty
+   │  └─ Create stock_movement (type=OUT, reference_type=SALE)
+   │
+   └─ If is_track_stock = false:
+      ├─ For each BOM entry:
+      │  ├─ Decrement material.stock by (bom.qty × sale.qty)
+      │  └─ Create stock_movement (type=OUT, reference_type=SALE)
+      │
+      └─ Create sale_item record
+   ↓
+3. Create sale record with status=PAID
+   ↓
+4. Transaction complete
 ```
-
-**Relationships:**
-- BelongsTo: raw_material
-
-**Flow:**
-1. Create stock_input
-2. raw_material.stock += qty
-3. Create stock_movement (type: PURCHASE, reference_id: stock_input.id)
-
-### 9. raw_material_stock_opnames
-Opname/adjustment stok
-
-```sql
-id (PK)
-raw_material_id (FK → raw_materials.id)
-qty (decimal 12,2) - positive or negative
-date (date)
-note (text, nullable)
-created_by (FK → users.id)
-updated_by (FK → users.id)
-created_at
-updated_at
-deleted_at (soft delete)
-```
-
-**Relationships:**
-- BelongsTo: raw_material
-
-**Flow:**
-1. Create stock_opname with qty (+ or -)
-2. raw_material.stock += qty
-3. Create stock_movement (type: ADJUSTMENT if qty > 0, WASTE if qty < 0)
-
-## Data Flow Diagrams
 
 ### Stock Input Flow
-```
-Stock Input Created
-    ↓
-raw_material.stock += qty
-    ↓
-stock_movement created (PURCHASE)
-    ↓
-Edit: stock adjusted, movement updated
-    ↓
-Delete: stock reversed, movement deleted
-```
 
-### Transaction Flow
 ```
-Transaction Created
-    ↓
-For each sale_item:
-    - Get product BOM
-    - For each BOM material:
-        - raw_material.stock -= (bom.qty × sale_item.qty)
-        - stock_movement created (SALE)
-    ↓
-Edit: stock adjusted based on qty changes
-    ↓
-Delete: status = VOID, stock restored, movements deleted
-    ↓
-Refund: status = REFUND, stock unchanged
+1. User records stock input
+   ↓
+2. Increment item.stock by qty
+   ↓
+3. Create stock_movement (type=IN, reference_type=PURCHASE)
+   ↓
+4. Stock input complete
 ```
 
 ### Stock Opname Flow
+
 ```
-Stock Opname Created (qty: +5 or -3)
-    ↓
-raw_material.stock += qty
-    ↓
-stock_movement created (ADJUSTMENT if +, WASTE if -)
-    ↓
-Edit: stock adjusted, movement updated
-    ↓
-Delete: stock reversed, movement deleted
+1. User records stock adjustment
+   ↓
+2. If qty > 0 (adjustment):
+   ├─ Increment item.stock by qty
+   └─ Create stock_movement (type=IN, reference_type=ADJUSTMENT)
+   
+   If qty < 0 (waste):
+   ├─ Decrement item.stock by |qty|
+   └─ Create stock_movement (type=OUT, reference_type=WASTE)
+   ↓
+3. Stock opname complete
 ```
 
-## Indexes
+### Transaction Deletion Flow
 
-For performance optimization:
+```
+1. User deletes sale
+   ↓
+2. For each sale_item:
+   ├─ If is_track_stock = true:
+   │  └─ Increment item.stock by qty
+   │
+   └─ If is_track_stock = false:
+      └─ For each BOM entry:
+         └─ Increment material.stock by (bom.qty × sale.qty)
+   ↓
+3. Delete all stock_movements for this sale
+   ↓
+4. Update sale.status = VOID
+   ↓
+5. Soft delete sale record
+   ↓
+6. Transaction deletion complete
+```
+
+---
+
+## Queries
+
+### Get stock movements for an item (last 30 days)
 
 ```sql
--- Foreign keys (auto-indexed)
-products.created_by
-products.updated_by
-raw_materials.created_by
-raw_materials.updated_by
-boms.product_id
-boms.raw_material_id
-sales.created_by
-sales.updated_by
-sale_items.sale_id
-sale_items.product_id
-raw_material_stock_movements.raw_material_id
-raw_material_stock_movements.created_by
-raw_material_stock_inputs.raw_material_id
-raw_material_stock_inputs.created_by
-raw_material_stock_opnames.raw_material_id
-raw_material_stock_opnames.created_by
-
--- Search indexes
-products.name
-raw_materials.name
-sales.invoice_no
+SELECT * FROM stock_movements
+WHERE item_id = ?
+  AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+ORDER BY created_at DESC;
 ```
 
-## Constraints
+### Get sales by product (date range)
 
-### Foreign Keys
-- All FK have CASCADE ON DELETE (except user references which are NULL ON DELETE)
-- Ensures referential integrity
-
-### Unique Constraints
-- users.email
-- sales.invoice_no
-
-### Check Constraints
-- products.price >= 0
-- raw_materials.stock >= 0
-- raw_materials.minimum_stock >= 0
-- sales.total_price >= 0
-- sale_items.qty > 0
-- raw_material_stock_movements.qty > 0
-
-## Soft Deletes
-
-All tables except cache and jobs have soft deletes:
-- deleted_at column (nullable timestamp)
-- Deleted records are excluded from queries by default
-- Can be restored if needed
-
-## Audit Trail
-
-All data tables track:
-- created_by: User who created the record
-- updated_by: User who last updated the record
-- created_at: When record was created
-- updated_at: When record was last updated
-- deleted_at: When record was deleted (soft delete)
-
-## Example Queries
-
-### Get all active products
 ```sql
-SELECT * FROM products WHERE is_active = 1 AND deleted_at IS NULL
+SELECT 
+    i.id,
+    i.name,
+    SUM(si.qty) as total_qty,
+    SUM(si.subtotal) as total_revenue
+FROM sale_items si
+JOIN items i ON si.item_id = i.id
+JOIN sales s ON si.sale_id = s.id
+WHERE s.status = 'PAID'
+  AND s.created_at BETWEEN ? AND ?
+GROUP BY i.id, i.name
+ORDER BY total_revenue DESC;
+```
+
+### Get items below minimum stock
+
+```sql
+SELECT * FROM items
+WHERE stock < minimum_stock
+  AND is_active = TRUE
+ORDER BY stock ASC;
 ```
 
 ### Get BOM for a product
+
 ```sql
-SELECT rm.*, b.qty 
-FROM boms b
-JOIN raw_materials rm ON b.raw_material_id = rm.id
-WHERE b.product_id = ? AND b.deleted_at IS NULL
+SELECT 
+    ib.id,
+    ib.qty,
+    m.id as material_id,
+    m.name as material_name,
+    m.stock as material_stock
+FROM item_boms ib
+JOIN items m ON ib.material_id = m.id
+WHERE ib.product_id = ?
+ORDER BY m.name;
 ```
 
-### Get stock movements for a material (last 30 days)
+### Get daily sales summary
+
 ```sql
-SELECT * FROM raw_material_stock_movements
-WHERE raw_material_id = ? 
-  AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-  AND deleted_at IS NULL
-ORDER BY created_at DESC
+SELECT 
+    DATE(s.created_at) as date,
+    COUNT(s.id) as transaction_count,
+    SUM(s.total_price) as total_revenue,
+    SUM(s.discount) as total_discount
+FROM sales s
+WHERE s.status = 'PAID'
+  AND s.created_at >= ?
+GROUP BY DATE(s.created_at)
+ORDER BY date DESC;
 ```
 
-### Get today's revenue
+### Get stock movement audit trail
+
 ```sql
-SELECT SUM(total_price) as revenue
-FROM sales
-WHERE DATE(created_at) = CURDATE()
-  AND status = 'PAID'
-  AND deleted_at IS NULL
+SELECT 
+    sm.id,
+    sm.date,
+    i.name as item_name,
+    sm.type,
+    sm.qty,
+    sm.reference_type,
+    u.name as created_by_name
+FROM stock_movements sm
+JOIN items i ON sm.item_id = i.id
+JOIN users u ON sm.created_by = u.id
+WHERE sm.item_id = ?
+ORDER BY sm.created_at DESC;
 ```
 
-### Get low stock materials
+---
+
+## Constraints & Validations
+
+### Item Constraints
+- `name` - Required, max 255 characters
+- `type` - Required, must be PRODUCT or RAW_MATERIAL
+- `unit` - Required, max 50 characters
+- `price` - Must be >= 0
+- `stock` - Must be >= 0
+- `minimum_stock` - Must be >= 0
+- `is_active` - Boolean
+- `is_track_stock` - Boolean
+
+### ItemBom Constraints
+- `product_id` - Required, must reference PRODUCT type item
+- `material_id` - Required, must reference RAW_MATERIAL type item
+- `qty` - Required, must be > 0
+
+### StockMovement Constraints
+- `item_id` - Required
+- `type` - Required, must be IN or OUT
+- `qty` - Required, must be > 0
+- `date` - Required, must be valid date
+- `reference_type` - Must match operation type
+
+### Sale Constraints
+- `invoice_no` - Required, unique
+- `total_price` - Required, must be >= 0
+- `paid_amount` - Required, must be >= 0
+- `change_amount` - Calculated, must be >= 0
+- `discount` - Must be >= 0
+- `status` - Must be PAID, VOID, or REFUND
+
+### SaleItem Constraints
+- `sale_id` - Required
+- `item_id` - Required
+- `price` - Required, must be >= 0
+- `qty` - Required, must be > 0
+- `subtotal` - Calculated, must equal price × qty
+
+---
+
+## Indexes
+
+### Performance Indexes
+
 ```sql
-SELECT * FROM raw_materials
-WHERE stock < minimum_stock
-  AND deleted_at IS NULL
+-- Stock movements by item and date
+CREATE INDEX idx_stock_movements_item_date 
+ON stock_movements(item_id, date);
+
+-- Sales by date
+CREATE INDEX idx_sales_created_at 
+ON sales(created_at);
+
+-- Sale items by sale
+CREATE INDEX idx_sale_items_sale_id 
+ON sale_items(sale_id);
+
+-- Items by type
+CREATE INDEX idx_items_type 
+ON items(type);
+
+-- Items by active status
+CREATE INDEX idx_items_is_active 
+ON items(is_active);
 ```
 
-## Notes
+---
 
-- All decimal fields use DECIMAL(12,2) for currency precision
-- Timestamps are in UTC (configurable in Laravel)
-- Soft deletes allow data recovery
-- Stock movements are immutable (only created/deleted, not updated)
-- Invoice numbers are unique and auto-generated
+## Soft Deletes
+
+The following tables support soft deletes:
+- `users` - deleted_at
+- `items` - deleted_at
+- `item_boms` - deleted_at
+- `sales` - deleted_at
+- `sale_items` - deleted_at
+
+Soft deleted records are excluded from queries by default in Eloquent.
+
+To include soft deleted records:
+```php
+Model::withTrashed()->get();
+```
+
+To get only soft deleted records:
+```php
+Model::onlyTrashed()->get();
+```
+
+To permanently delete:
+```php
+Model::forceDelete();
+```

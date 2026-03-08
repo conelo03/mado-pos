@@ -3,12 +3,13 @@
 namespace App\Livewire\Transactions;
 
 use App\Models\Sale;
-use App\Models\Product;
+use App\Models\Item;
 use App\Models\SaleItem;
-use App\Models\RawMaterialStockMovement;
+use App\Models\StockMovement;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class Index extends Component
 {
@@ -32,7 +33,8 @@ class Index extends Component
             ->latest()
             ->paginate(10);
 
-        $products = Product::where('is_active', true)
+        $products = Item::where('type', 'PRODUCT')
+            ->where('is_active', true)
             ->where('name', 'like', "%{$this->productSearch}%")
             ->get();
 
@@ -55,16 +57,16 @@ class Index extends Component
 
     public function addItem($productId)
     {
-        $product = Product::find($productId);
+        $product = Item::find($productId);
         
-        $existingKey = array_search($productId, array_column($this->items, 'product_id'));
+        $existingKey = array_search($productId, array_column($this->items, 'item_id'));
         
         if ($existingKey !== false) {
             $this->items[$existingKey]['qty'] += 1;
             $this->items[$existingKey]['subtotal'] = $this->items[$existingKey]['price'] * $this->items[$existingKey]['qty'];
         } else {
             $this->items[] = [
-                'product_id' => $productId,
+                'item_id' => $productId,
                 'product_name' => $product->name,
                 'price' => $product->price,
                 'qty' => 1,
@@ -142,95 +144,114 @@ class Index extends Component
         $discount = $this->discount ?? 0;
         $paidAmount = $this->paid_amount ?? $this->total_price;
 
-        if ($this->editingId) {
-            // Update existing transaction
-            $sale = Sale::find($this->editingId);
-            
-            // Restore old stock first
-            foreach ($sale->items as $item) {
-                $this->restoreRawMaterialStock($item->product_id, $item->qty, $sale->id);
-            }
+        DB::transaction(function () use ($discount, $paidAmount) {
+            if ($this->editingId) {
+                // Update existing transaction
+                $sale = Sale::find($this->editingId);
+                
+                // Restore old stock first
+                foreach ($sale->items as $item) {
+                    $this->restoreItemStock($item->item_id, $item->qty, $sale->id);
+                }
 
-            // Delete old stock movements
-            RawMaterialStockMovement::where('reference_id', $sale->id)
-                ->where('reference_type', 'SALE')
-                ->delete();
+                // Delete old stock movements
+                StockMovement::where('reference_id', $sale->id)
+                    ->where('reference_type', 'SALE')
+                    ->delete();
 
-            // Delete old items
-            SaleItem::where('sale_id', $sale->id)->delete();
+                // Delete old items
+                SaleItem::where('sale_id', $sale->id)->delete();
 
-            // Update sale
-            $sale->update([
-                'total_price' => $this->total_price,
-                'paid_amount' => $paidAmount,
-                'change_amount' => $paidAmount - $this->total_price,
-                'discount' => $discount,
-                'updated_by' => auth()->id(),
-            ]);
-
-            // Add new items
-            foreach ($this->items as $item) {
-                SaleItem::create([
-                    'sale_id' => $sale->id,
-                    'product_id' => $item['product_id'],
-                    'price' => $item['price'],
-                    'qty' => $item['qty'],
-                    'subtotal' => $item['subtotal'],
+                // Update sale
+                $sale->update([
+                    'total_price' => $this->total_price,
+                    'paid_amount' => $paidAmount,
+                    'change_amount' => $paidAmount - $this->total_price,
+                    'discount' => $discount,
+                    'updated_by' => auth()->id(),
                 ]);
 
-                // Reduce raw material stock
-                $this->reduceRawMaterialStock($item['product_id'], $item['qty'], $sale->id);
-            }
+                // Add new items
+                foreach ($this->items as $item) {
+                    SaleItem::create([
+                        'sale_id' => $sale->id,
+                        'item_id' => $item['item_id'],
+                        'price' => $item['price'],
+                        'qty' => $item['qty'],
+                        'subtotal' => $item['subtotal'],
+                    ]);
 
-            $this->closeModal();
-            $this->dispatch('notify', message: 'Transaction updated successfully');
-        } else {
-            // Create new transaction
-            $sale = Sale::create([
-                'invoice_no' => 'INV-' . date('YmdHis'),
-                'total_price' => $this->total_price,
-                'paid_amount' => $paidAmount,
-                'change_amount' => $paidAmount - $this->total_price,
-                'discount' => $discount,
-                'status' => 'PAID',
-                'created_by' => auth()->id(),
-            ]);
+                    // Reduce item stock
+                    $this->reduceItemStock($item['item_id'], $item['qty'], $sale->id);
+                }
 
-            foreach ($this->items as $item) {
-                SaleItem::create([
-                    'sale_id' => $sale->id,
-                    'product_id' => $item['product_id'],
-                    'price' => $item['price'],
-                    'qty' => $item['qty'],
-                    'subtotal' => $item['subtotal'],
+                $this->closeModal();
+                $this->dispatch('notify', message: 'Transaction updated successfully');
+            } else {
+                // Create new transaction
+                $sale = Sale::create([
+                    'invoice_no' => 'INV-' . date('YmdHis'),
+                    'total_price' => $this->total_price,
+                    'paid_amount' => $paidAmount,
+                    'change_amount' => $paidAmount - $this->total_price,
+                    'discount' => $discount,
+                    'status' => 'PAID',
+                    'created_by' => auth()->id(),
                 ]);
 
-                // Reduce raw material stock
-                $this->reduceRawMaterialStock($item['product_id'], $item['qty'], $sale->id);
-            }
+                foreach ($this->items as $item) {
+                    SaleItem::create([
+                        'sale_id' => $sale->id,
+                        'item_id' => $item['item_id'],
+                        'price' => $item['price'],
+                        'qty' => $item['qty'],
+                        'subtotal' => $item['subtotal'],
+                    ]);
 
-            $this->closeModal();
-            $this->dispatch('notify', message: 'Transaction saved successfully');
-        }
+                    // Reduce item stock
+                    $this->reduceItemStock($item['item_id'], $item['qty'], $sale->id);
+                }
+
+                $this->closeModal();
+                $this->dispatch('notify', message: 'Transaction saved successfully');
+            }
+        });
     }
 
-    private function reduceRawMaterialStock($productId, $qty, $saleId)
+    private function reduceItemStock($itemId, $qty, $saleId)
     {
-        $product = Product::find($productId);
+        $item = Item::find($itemId);
         
-        foreach ($product->boms as $bom) {
-            $requiredQty = $bom->qty * $qty;
+        // If is_track_stock is true, reduce item stock directly
+        if ($item->is_track_stock) {
+            $item->decrement('stock', $qty);
             
-            $bom->rawMaterial->decrement('stock', $requiredQty);
-
-            RawMaterialStockMovement::create([
-                'raw_material_id' => $bom->raw_material_id,
-                'type' => 'SALE',
-                'qty' => $requiredQty,
+            StockMovement::create([
+                'item_id' => $itemId,
+                'type' => 'OUT',
+                'qty' => $qty,
                 'reference_id' => $saleId,
                 'reference_type' => 'SALE',
+                'date' => now()->toDateString(),
                 'created_by' => auth()->id(),
             ]);
+        } else {
+            // If is_track_stock is false, check item_boms to reduce materials
+            foreach ($item->boms as $bom) {
+                $requiredQty = $bom->qty * $qty;
+                
+                $bom->material->decrement('stock', $requiredQty);
+
+                StockMovement::create([
+                    'item_id' => $bom->material_id,
+                    'type' => 'OUT',
+                    'qty' => $requiredQty,
+                    'reference_id' => $saleId,
+                    'reference_type' => 'SALE',
+                    'date' => now()->toDateString(),
+                    'created_by' => auth()->id(),
+                ]);
+            }
         }
     }
 
@@ -241,8 +262,8 @@ class Index extends Component
         
         $this->items = $sale->items->map(function ($item) {
             return [
-                'product_id' => $item->product_id,
-                'product_name' => $item->product->name,
+                'item_id' => $item->item_id,
+                'product_name' => $item->item->name,
                 'price' => $item->price,
                 'qty' => $item->qty,
                 'subtotal' => $item->subtotal,
@@ -271,32 +292,40 @@ class Index extends Component
 
     public function delete($id)
     {
-        $sale = Sale::find($id);
-        
-        // Restore raw material stock
-        foreach ($sale->items as $item) {
-            $this->restoreRawMaterialStock($item->product_id, $item->qty, $sale->id);
-        }
+        DB::transaction(function () use ($id) {
+            $sale = Sale::find($id);
+            
+            // Restore item stock
+            foreach ($sale->items as $item) {
+                $this->restoreItemStock($item->item_id, $item->qty, $sale->id);
+            }
 
-        // Delete stock movements
-        RawMaterialStockMovement::where('reference_id', $sale->id)
-            ->where('reference_type', 'SALE')
-            ->delete();
+            // Delete stock movements
+            StockMovement::where('reference_id', $sale->id)
+                ->where('reference_type', 'SALE')
+                ->delete();
 
-        $sale->update(['status' => 'VOID']);
-        $sale->delete();
+            $sale->update(['status' => 'VOID']);
+            $sale->delete();
+        });
 
         $this->deleteId = null;
         $this->dispatch('notify', message: 'Transaction deleted successfully');
     }
 
-    private function restoreRawMaterialStock($productId, $qty, $saleId)
+    private function restoreItemStock($itemId, $qty, $saleId)
     {
-        $product = Product::find($productId);
+        $item = Item::find($itemId);
         
-        foreach ($product->boms as $bom) {
-            $requiredQty = $bom->qty * $qty;
-            $bom->rawMaterial->increment('stock', $requiredQty);
+        // If is_track_stock is true, restore item stock directly
+        if ($item->is_track_stock) {
+            $item->increment('stock', $qty);
+        } else {
+            // If is_track_stock is false, check item_boms to restore materials
+            foreach ($item->boms as $bom) {
+                $requiredQty = $bom->qty * $qty;
+                $bom->material->increment('stock', $requiredQty);
+            }
         }
     }
 

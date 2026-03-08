@@ -8,7 +8,7 @@ class TransactionPrintController extends Controller
 {
     public function show($id)
     {
-        $sale = Sale::with('items.product')->find($id);
+        $sale = Sale::with('items.item')->find($id);
         
         if (!$sale) {
             abort(404);

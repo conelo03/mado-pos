@@ -189,7 +189,7 @@
                                 <label>Discount:</label>
                                 <input 
                                     type="number" 
-                                    step="0.01"
+                                    step="1"
                                     wire:model.live.debounce.500ms="discount"
                                     class="input input-bordered input-sm w-24"
                                 >
@@ -206,7 +206,7 @@
                                 <label>Paid Amount:</label>
                                 <input 
                                     type="number" 
-                                    step="0.01"
+                                    step="1"
                                     wire:model.live="paid_amount"
                                     {{-- @change="$wire.updatePaidAmount($event.target.value)" --}}
                                     class="input input-bordered input-sm w-24"

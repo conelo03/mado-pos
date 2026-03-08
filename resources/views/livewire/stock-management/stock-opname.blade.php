@@ -3,7 +3,7 @@
         <input 
             type="text" 
             wire:model.live="search" 
-            placeholder="Search raw material..." 
+            placeholder="Search item..." 
             class="input input-bordered w-full lg:w-64"
         >
         <button 
@@ -11,7 +11,7 @@
             class="btn btn-primary w-full lg:w-auto"
         >
             <x-icon.plus />
-            Add Stock Input
+            Add Stock Opname
         </button>
     </div>
 
@@ -20,31 +20,42 @@
             <thead>
                 <tr>
                     <th style="width: 50px;">#</th>
-                    <th>Raw Material</th>
+                    <th>Item</th>
                     <th>Qty</th>
+                    <th>Type</th>
                     <th>Date</th>
                     <th>Note</th>
                     <th style="width: 100px;">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                @forelse($inputs as $input)
+                @forelse($movements as $movement)
                     <tr class="hover:bg-base-300">
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ $input->rawMaterial->name }}</td>
-                        <td>{{ $input->qty }} {{ $input->rawMaterial->unit }}</td>
-                        <td>{{ $input->date->format('d M Y') }}</td>
-                        <td>{{ $input->note }}</td>
+                        <td>{{ $movement->item->name }}</td>
+                        <td>
+                            <span class="{{ $movement->reference_type === 'WASTE' ? 'text-error font-bold' : 'text-success font-bold' }}">
+                                {{ $movement->reference_type === 'WASTE' ? '-' : '+' }}{{ number_format($movement->qty, 2, ',', '.') }}
+                            </span>
+                            {{ $movement->item->unit }}
+                        </td>
+                        <td>
+                            <div class="badge {{ $movement->reference_type === 'ADJUSTMENT' ? 'badge-success' : 'badge-warning' }}">
+                                {{ $movement->reference_type }}
+                            </div>
+                        </td>
+                        <td>{{ $movement->date->format('d M Y') }}</td>
+                        <td>{{ $movement->note ?? '-' }}</td>
                         <td>
                             <div class="flex gap-1">
                                 <button 
-                                    wire:click="edit({{ $input->id }})" 
+                                    wire:click="edit({{ $movement->id }})" 
                                     class="btn btn-xs btn-warning" title="Edit"
                                 >
                                     <x-icon.pencil />
                                 </button>
                                 <button 
-                                    wire:click="confirmDelete({{ $input->id }})" 
+                                    wire:click="confirmDelete({{ $movement->id }})" 
                                     class="btn btn-xs btn-error" title="Delete"
                                 >
                                     <x-icon.trash />
@@ -54,47 +65,47 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center">No stock inputs found</td>
+                        <td colspan="7" class="text-center">No stock opnames found</td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 
-    <div>
-        {{ $inputs->links('vendor.pagination.tailwind') }}
+    <div class="mt-4">
+        {{ $movements->links('vendor.pagination.tailwind') }}
     </div>
 
     <!-- Modal -->
     @if($showModal)
         <div class="modal modal-open">
             <div class="modal-box">
-                <h3 class="font-bold text-lg mb-4">{{ $editingId ? 'Edit' : 'Add' }} Stock Input</h3>
+                <h3 class="font-bold text-lg mb-4">{{ $editingId ? 'Edit' : 'Add' }} Stock Opname</h3>
                 
                 <form wire:submit="save">
                     <div class="form-control w-full mb-4">
                         <label class="label">
-                            <span class="label-text">Raw Material</span>
+                            <span class="label-text">Item</span>
                         </label>
                         <select 
-                            wire:model="raw_material_id" 
+                            wire:model="item_id" 
                             class="select select-bordered w-full"
                         >
-                            <option value="">Select raw material</option>
-                            @foreach($rawMaterials as $material)
-                                <option value="{{ $material->id }}">{{ $material->name }}</option>
+                            <option value="">Select item</option>
+                            @foreach($items as $item)
+                                <option value="{{ $item->id }}">{{ $item->name }}</option>
                             @endforeach
                         </select>
-                        @error('raw_material_id') <span class="text-error text-sm">{{ $message }}</span> @enderror
+                        @error('item_id') <span class="text-error text-sm">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="form-control w-full mb-4">
                         <label class="label">
-                            <span class="label-text">Quantity</span>
+                            <span class="label-text">Quantity (negative for waste)</span>
                         </label>
                         <input 
                             type="number" 
-                            step="0.01"
+                            step="1"
                             wire:model="qty" 
                             class="input input-bordered w-full"
                         >
@@ -113,7 +124,7 @@
                         @error('date') <span class="text-error text-sm">{{ $message }}</span> @enderror
                     </div>
 
-                    <div class="form-control w-full mb-6">
+                    <div class="form-control w-full mb-4">
                         <label class="label">
                             <span class="label-text">Note</span>
                         </label>
@@ -122,37 +133,22 @@
                             class="textarea textarea-bordered w-full"
                             rows="3"
                         ></textarea>
+                        @error('note') <span class="text-error text-sm">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="modal-action">
-                        <button 
-                            type="button"
-                            wire:click="closeModal" 
-                            class="btn"
-                        >
-                            <x-icon.x />
-                            Cancel
-                        </button>
-                        <button 
-                            type="submit" 
-                            class="btn btn-primary"
-                        >
-                            <x-icon.check />
-                            Save
-                        </button>
+                        <button type="button" wire:click="closeModal" class="btn">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
                     </div>
                 </form>
             </div>
-            <form method="dialog" class="modal-backdrop">
-                <button wire:click="closeModal">close</button>
-            </form>
         </div>
     @endif
 
     <!-- Confirm Delete Dialog -->
     <x-confirm-dialog 
-        title="Delete Stock Input"
-        message="Are you sure you want to delete this stock input? This action cannot be undone."
+        title="Delete Stock Opname"
+        message="Are you sure you want to delete this stock opname? This action cannot be undone."
         confirmText="Delete"
         cancelText="Cancel"
         isDangerous="true"

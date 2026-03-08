@@ -8,14 +8,18 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('raw_materials', function (Blueprint $table) {
+        Schema::create('items', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->enum('type', ['PRODUCT', 'RAW_MATERIAL']);
             $table->string('unit');
+            $table->decimal('price', 12, 2)->default(0);
             $table->decimal('stock', 12, 2)->default(0);
             $table->decimal('minimum_stock', 12, 2)->default(0);
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->boolean('is_active')->default(true);
+            $table->boolean('is_track_stock')->default(true);
+            $table->foreignId('created_by')->constrained('users');
+            $table->foreignId('updated_by')->nullable()->constrained('users');
             $table->timestamps();
             $table->softDeletes();
         });
@@ -23,6 +27,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('raw_materials');
+        Schema::dropIfExists('items');
     }
 };

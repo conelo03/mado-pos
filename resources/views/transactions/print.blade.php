@@ -180,7 +180,7 @@
             
             @foreach($sale->items as $item)
                 <div class="item-row">
-                    <span class="item-name">{{ $item->product->name }}</span>
+                    <span class="item-name">{{ $item->item->name }}</span>
                 </div>
                 <div class="item-row">
                     <span style="font-size: 10px; color: #666;">

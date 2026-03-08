@@ -73,39 +73,34 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('products.index') }}" class="{{ request()->routeIs('products.*') ? 'active bg-primary text-primary-content' : 'text-white hover:bg-slate-700' }}">
+                        <a href="{{ route('items.index') }}" class="{{ request()->routeIs('items.*') ? 'active bg-primary text-primary-content' : 'text-white hover:bg-slate-700' }}">
                             <x-icon.package />
-                            Products
+                            Items
                         </a>
                     </li>
                     <li>
-                        <details @if(request()->routeIs('raw-materials.*', 'raw-material-stock-inputs.*', 'raw-material-stock-opnames.*')) open @endif>
+                        <details @if(request()->routeIs('stock-input.*', 'stock-opname.*')) open @endif>
                             <summary class="text-white hover:bg-slate-700">
-                                <x-icon.layers />
-                                Raw Materials
+                                <x-icon.inbox />
+                                Stock Management
                             </summary>
                             <ul class="space-y-2">
                                 <li>
-                                    <a href="{{ route('raw-materials.index') }}" class="{{ request()->routeIs('raw-materials.*') ? 'active bg-primary text-primary-content' : 'text-white hover:bg-slate-700' }}">
-                                        <x-icon.clipboard />
-                                        List
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ route('raw-material-stock-inputs.index') }}" class="{{ request()->routeIs('raw-material-stock-inputs.*') ? 'active bg-primary text-primary-content' : 'text-white hover:bg-slate-700' }}">
+                                    <a href="{{ route('stock-input.index') }}" class="{{ request()->routeIs('stock-input.*') ? 'active bg-primary text-primary-content' : 'text-white hover:bg-slate-700' }}">
                                         <x-icon.plus-circle />
                                         Stock Input
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="{{ route('raw-material-stock-opnames.index') }}" class="{{ request()->routeIs('raw-material-stock-opnames.*') ? 'active bg-primary text-primary-content' : 'text-white hover:bg-slate-700' }}">
-                                        <x-icon.inbox />
+                                    <a href="{{ route('stock-opname.index') }}" class="{{ request()->routeIs('stock-opname.*') ? 'active bg-primary text-primary-content' : 'text-white hover:bg-slate-700' }}">
+                                        <x-icon.clipboard />
                                         Stock Opname
                                     </a>
                                 </li>
                             </ul>
                         </details>
                     </li>
+
                 @endif
                 <li>
                     <a href="{{ route('transactions.index') }}" class="{{ request()->routeIs('transactions.*') ? 'active bg-primary text-primary-content' : 'text-white hover:bg-slate-700' }}">

@@ -3,7 +3,7 @@
 namespace App\Livewire\Reports;
 
 use App\Models\SaleItem;
-use App\Models\Product;
+use App\Models\Item;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -23,7 +23,7 @@ class ByProducts extends Component
 
     public function render()
     {
-        $query = SaleItem::with('product', 'sale')
+        $query = SaleItem::with('item', 'sale')
             ->whereHas('sale', function ($q) {
                 $q->whereBetween('created_at', [
                     $this->startDate . ' 00:00:00',
@@ -32,14 +32,14 @@ class ByProducts extends Component
             });
 
         if ($this->productId) {
-            $query->where('product_id', $this->productId);
+            $query->where('item_id', $this->productId);
         }
 
         $items = $query->get();
 
-        $report = $items->groupBy('product_id')->map(function ($group) {
+        $report = $items->groupBy('item_id')->map(function ($group) {
             return [
-                'product_name' => $group->first()->product->name,
+                'product_name' => $group->first()->item->name,
                 'qty' => $group->sum('qty'),
                 'subtotal' => $group->sum('subtotal'),
             ];
@@ -48,7 +48,7 @@ class ByProducts extends Component
         $totalQty = $report->sum('qty');
         $totalSubtotal = $report->sum('subtotal');
 
-        $products = Product::where('is_active', true)->orderBy('name')->get();
+        $products = Item::where('type', 'PRODUCT')->where('is_active', true)->orderBy('name')->get();
 
         return view('livewire.reports.by-products', [
             'report' => $report,

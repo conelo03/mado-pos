@@ -10,7 +10,7 @@ class SaleItem extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['sale_id', 'product_id', 'price', 'qty', 'subtotal'];
+    protected $fillable = ['sale_id', 'item_id', 'price', 'qty', 'subtotal'];
 
     protected $casts = [
         'price' => 'decimal:2',
@@ -23,8 +23,8 @@ class SaleItem extends Model
         return $this->belongsTo(Sale::class);
     }
 
-    public function product(): BelongsTo
+    public function item(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Item::class);
     }
 }
