@@ -34,7 +34,7 @@ class StockOpname extends Component
             ->latest()
             ->paginate(10);
 
-        $items = Item::where('is_active', true)->get();
+        $items = Item::where('is_active', true)->where('is_track_stock', true)->get();
 
         return view('livewire.stock-management.stock-opname', [
             'movements' => $movements,
