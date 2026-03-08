@@ -114,8 +114,12 @@ class Index extends Component
         $subtotal = array_sum(array_column($this->items, 'subtotal'));
         $discount = $this->discount ?? 0;
         $paid_amount = $this->paid_amount ?? 0;
-        
-        $this->total_price = $subtotal - $discount;
+
+        if ($discount > 0) {
+            $this->total_price = $subtotal - $discount;
+        } else {
+            $this->total_price = $subtotal;
+        }
         
         if ($paid_amount > 0) {
             $this->change_amount = $paid_amount - $this->total_price;
