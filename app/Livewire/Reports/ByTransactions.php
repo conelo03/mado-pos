@@ -1,0 +1,42 @@
+<?php
+
+namespace App\Livewire\Reports;
+
+use App\Models\Sale;
+use Livewire\Component;
+use Livewire\WithPagination;
+
+class ByTransactions extends Component
+{
+    use WithPagination;
+
+    public $startDate = '';
+    public $endDate = '';
+
+    public function mount()
+    {
+        $this->startDate = now()->startOfMonth()->format('Y-m-d');
+        $this->endDate = now()->format('Y-m-d');
+    }
+
+    public function render()
+    {
+        $sales = Sale::whereBetween('created_at', [
+            $this->startDate . ' 00:00:00',
+            $this->endDate . ' 23:59:59'
+        ])
+        ->where('status', 'PAID')
+        ->orderBy('created_at', 'desc')
+        ->paginate(10);
+
+        $totalRevenue = Sale::whereBetween('created_at', [
+            $this->startDate . ' 00:00:00',
+            $this->endDate . ' 23:59:59'
+        ])->where('status', 'PAID')->sum('total_price');
+
+        return view('livewire.reports.by-transactions', [
+            'sales' => $sales,
+            'totalRevenue' => $totalRevenue,
+        ])->layout('components.app-layout', ['title' => 'Sales Report - By Transactions']);
+    }
+}
