@@ -5,6 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MADO POS</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.default.min.css" rel="stylesheet">
+    <style>
+        .ts-wrapper .ts-control {
+            border: 1px solid oklch(var(--bc) / 0.2);
+            border-radius: var(--rounded-btn, 0.5rem);
+            background-color: oklch(var(--b1));
+            color: oklch(var(--bc));
+            min-height: 2.5rem;
+            padding: 0 0.75rem;
+            font-size: 0.875rem;
+            box-shadow: none;
+            cursor: pointer;
+        }
+        .ts-wrapper.focus .ts-control {
+            border-color: oklch(var(--p));
+            outline: none;
+            box-shadow: none;
+        }
+        .ts-dropdown {
+            border: 1px solid oklch(var(--bc) / 0.2);
+            border-radius: var(--rounded-btn, 0.5rem);
+            background-color: oklch(var(--b1));
+            color: oklch(var(--bc));
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            z-index: 9999;
+        }
+        .ts-dropdown .option {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            background-color: oklch(var(--b1));
+            color: oklch(var(--bc));
+        }
+        .ts-dropdown .option:hover,
+        .ts-dropdown .option.active {
+            background-color: oklch(var(--b2));
+            color: oklch(var(--bc));
+        }
+        .ts-dropdown .option.selected {
+            background-color: oklch(var(--b2));
+        }
+        .ts-wrapper .ts-control input {
+            color: oklch(var(--bc));
+            font-size: 0.875rem;
+            background-color: transparent;
+        }
+        .ts-wrapper .ts-control input::placeholder {
+            color: oklch(var(--bc) / 0.4);
+        }
+        .ts-dropdown .ts-dropdown-content input {
+            border: 1px solid oklch(var(--bc) / 0.2);
+            border-radius: 0.375rem;
+            background-color: oklch(var(--b2));
+            color: oklch(var(--bc));
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            width: 100%;
+            outline: none;
+            margin-bottom: 0.25rem;
+        }
+        .ts-wrapper .item {
+            background-color: oklch(var(--b2));
+            color: oklch(var(--bc));
+            border: 1px solid oklch(var(--bc) / 0.2);
+            border-radius: 0.25rem;
+            padding: 0 0.5rem;
+        }
+        .ts-wrapper .item .remove {
+            color: oklch(var(--bc) / 0.5);
+            border-left: 1px solid oklch(var(--bc) / 0.2);
+            padding-left: 0.25rem;
+            margin-left: 0.25rem;
+        }
+        .ts-wrapper .item .remove:hover {
+            color: oklch(var(--er));
+            background: transparent;
+        }
+    </style>
     @livewireStyles
 </head>
 <body data-theme="light">
@@ -150,6 +227,8 @@
     </div>
 
     @livewireScripts
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+    @stack('scripts')
     <x-notification />
 </body>
 </html>

@@ -115,12 +115,14 @@
                                 <label class="label">
                                     <span class="label-text">Customer (Optional)</span>
                                 </label>
-                                <select wire:model.live="customer_id" class="select select-bordered select-sm">
-                                    <option value="">Walk-in Customer</option>
-                                    @foreach($customers as $customer)
-                                        <option value="{{ $customer->id }}">{{ $customer->name }}{{ $customer->priceListType ? ' (' . $customer->priceListType->type . ')' : '' }}</option>
-                                    @endforeach
-                                </select>
+                                <div wire:ignore>
+                                    <select id="customer-select" class="w-full">
+                                        <option value="">Walk-in Customer</option>
+                                        @foreach($customers as $customer)
+                                            <option value="{{ $customer->id }}">{{ $customer->name }}{{ $customer->priceListType ? ' (' . $customer->priceListType->type . ')' : '' }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
                             <div class="form-control">
                                 <label class="label">
@@ -131,7 +133,7 @@
                                         {{ $priceListTypes->firstWhere('id', $price_list_type_id)?->name }} ({{ $priceListTypes->firstWhere('id', $price_list_type_id)?->type }})
                                     </div>
                                 @else
-                                    <select wire:model.live="price_list_type_id" class="select select-bordered select-sm">
+                                    <select wire:model.live="price_list_type_id" class="select select-bordered select-sm w-full">
                                         @foreach($priceListTypes as $priceType)
                                             <option value="{{ $priceType->id }}">{{ $priceType->name }} ({{ $priceType->type }})</option>
                                         @endforeach
@@ -423,3 +425,39 @@
         </div>
     @endif
 </div>
+
+@push('scripts')
+<script>
+    let customerTomSelect = null;
+
+    function initCustomerSelect() {
+        const el = document.getElementById('customer-select');
+        if (!el || el.tomselect) return;
+
+        customerTomSelect = new TomSelect(el, {
+            create: false,
+            placeholder: 'Search or select customer...',
+            maxOptions: null,
+            allowEmptyOption: true,
+            plugins: ['remove_button'],
+        });
+
+        customerTomSelect.on('change', function(value) {
+            @this.call('onCustomerSelected', value || null);
+        });
+    }
+
+    document.addEventListener('livewire:initialized', () => {
+        Livewire.hook('morph.updated', () => {
+            const select = document.getElementById('customer-select');
+            if (select && !select.tomselect) {
+                // Modal just opened, init Tom Select
+                initCustomerSelect();
+            } else if (!select && customerTomSelect) {
+                // Modal closed, clean up reference
+                customerTomSelect = null;
+            }
+        });
+    });
+</script>
+@endpush

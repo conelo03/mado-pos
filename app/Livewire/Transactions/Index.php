@@ -11,6 +11,7 @@ use App\Models\PriceListType;
 use App\Models\ItemPriceList;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\On;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
@@ -225,6 +226,13 @@ class Index extends Component
     public function updatedPaidAmount()
     {
         $this->calculateTotal();
+    }
+
+    #[On('customerSelected')]
+    public function onCustomerSelected($id)
+    {
+        $this->customer_id = $id;
+        $this->updatedCustomerId();
     }
 
     public function updatedCustomerId()
