@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
         PriceListType::firstOrCreate(
             ['type' => 'RETAIL'],
             [
-                'name' => 'Retail Price',
+                'name' => 'Harga Retail',
                 'description' => 'Standard retail pricing for walk-in customers',
                 'created_by' => $superadmin->id,
             ]
@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
         PriceListType::firstOrCreate(
             ['type' => 'GROSIR'],
             [
-                'name' => 'Wholesale Price',
+                'name' => 'Harga Grosir',
                 'description' => 'Wholesale pricing for bulk purchases',
                 'created_by' => $superadmin->id,
             ]
@@ -42,7 +42,7 @@ class DatabaseSeeder extends Seeder
         PriceListType::firstOrCreate(
             ['type' => 'MEMBER'],
             [
-                'name' => 'Member Price',
+                'name' => 'Harga Member',
                 'description' => 'Special pricing for registered members',
                 'created_by' => $superadmin->id,
             ]
@@ -51,7 +51,7 @@ class DatabaseSeeder extends Seeder
         PriceListType::firstOrCreate(
             ['type' => 'RESELLER'],
             [
-                'name' => 'Reseller Price',
+                'name' => 'Harga Reseller',
                 'description' => 'Pricing for authorized resellers',
                 'created_by' => $superadmin->id,
             ]
