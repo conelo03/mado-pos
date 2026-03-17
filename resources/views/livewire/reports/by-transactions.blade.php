@@ -33,6 +33,34 @@
                 <option value="">All Status</option>
             </select>
         </div>
+        <div class="flex-1">
+            <label class="label">
+                <span class="label-text">Customer</span>
+            </label>
+            <select 
+                wire:model.live="customerFilter" 
+                class="select select-bordered w-full"
+            >
+                <option value="">All Customers</option>
+                @foreach($customers as $customer)
+                    <option value="{{ $customer->id }}">{{ $customer->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="flex-1">
+            <label class="label">
+                <span class="label-text">Price Type</span>
+            </label>
+            <select 
+                wire:model.live="priceListTypeFilter" 
+                class="select select-bordered w-full"
+            >
+                <option value="">All Price Types</option>
+                @foreach($priceListTypes as $priceType)
+                    <option value="{{ $priceType->id }}">{{ $priceType->name }}</option>
+                @endforeach
+            </select>
+        </div>
     </div>
 
     <div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
@@ -42,6 +70,8 @@
                     <th style="width: 50px;">#</th>
                     <th>Invoice</th>
                     <th>Date</th>
+                    <th>Customer</th>
+                    <th>Price Type</th>
                     <th>Status</th>
                     <th>Total Cost</th>
                     <th>Total Revenue</th>
@@ -53,6 +83,8 @@
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $sale->invoice_no }}</td>
                         <td>{{ $sale->created_at->format('d/m/Y H:i') }}</td>
+                        <td>{{ $sale->customer?->name ?? 'Walk-in Customer' }}</td>
+                        <td>{{ $sale->priceListType?->name ?? '-' }}</td>
                         <td>
                             <div class="badge {{ $sale->status === 'PAID' ? 'badge-success' : ($sale->status === 'REFUND' ? 'badge-warning' : 'badge-error') }}">
                                 {{ $sale->status }}
@@ -63,13 +95,13 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center">No data found</td>
+                        <td colspan="8" class="text-center">No data found</td>
                     </tr>
                 @endforelse
             </tbody>
             <tfoot>
                 <tr class="font-bold bg-base-200">
-                    <td colspan="4">Total</td>
+                    <td colspan="6">Total</td>
                     <td>Rp {{ number_format($totalCost, 0, ',', '.') }}</td>
                     <td>Rp {{ number_format($totalRevenue, 0, ',', '.') }}</td>
                 </tr>

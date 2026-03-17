@@ -6,6 +6,9 @@ use App\Models\Sale;
 use App\Models\Item;
 use App\Models\SaleItem;
 use App\Models\StockMovement;
+use App\Models\Customer;
+use App\Models\PriceListType;
+use App\Models\ItemPriceList;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Str;
@@ -21,6 +24,8 @@ class Index extends Component
     public $showViewModal = false;
     public $editingId = null;
     public $viewingId = null;
+    public $customer_id = null;
+    public $price_list_type_id = null;
     public $items = [];
     public $viewItems = [];
     public $viewInvoiceNo = '';
@@ -37,6 +42,7 @@ class Index extends Component
     public function mount()
     {
         $this->statusFilter = 'PAID';
+        $this->price_list_type_id = PriceListType::where('type', 'RETAIL')->first()?->id;
     }
 
     public function render()
@@ -54,15 +60,21 @@ class Index extends Component
             ->where('name', 'like', "%{$this->productSearch}%")
             ->get();
 
+        $customers = Customer::all();
+        $priceListTypes = PriceListType::all();
+
         return view('livewire.transactions.index', [
             'sales' => $sales,
             'products' => $products,
+            'customers' => $customers,
+            'priceListTypes' => $priceListTypes,
         ])->layout('components.app-layout', ['title' => 'Transactions']);
     }
 
     public function openModal()
     {
-        $this->reset(['editingId', 'items', 'discount', 'paid_amount', 'total_price', 'change_amount', 'productSearch']);
+        $this->reset(['editingId', 'items', 'discount', 'paid_amount', 'total_price', 'change_amount', 'productSearch', 'customer_id']);
+        $this->price_list_type_id = PriceListType::where('type', 'RETAIL')->first()?->id;
         $this->showModal = true;
     }
 
@@ -100,9 +112,28 @@ class Index extends Component
         $this->showViewModal = false;
     }
 
+    public function getItemPrice($itemId)
+    {
+        // If price_list_type is selected, try to get price from item_price_lists
+        if ($this->price_list_type_id) {
+            $itemPrice = ItemPriceList::where('item_id', $itemId)
+                ->where('price_list_type_id', $this->price_list_type_id)
+                ->first();
+            
+            if ($itemPrice) {
+                return $itemPrice->price;
+            }
+        }
+
+        // Fallback to item's default price
+        $item = Item::find($itemId);
+        return $item->price;
+    }
+
     public function addItem($productId)
     {
         $product = Item::find($productId);
+        $price = $this->getItemPrice($productId);
         
         $existingKey = array_search($productId, array_column($this->items, 'item_id'));
         
@@ -114,10 +145,10 @@ class Index extends Component
             $this->items[] = [
                 'item_id' => $productId,
                 'product_name' => $product->name,
-                'price' => $product->price,
+                'price' => $price,
                 'cost' => $product->cost,
                 'qty' => 1,
-                'subtotal' => $product->price,
+                'subtotal' => $price,
                 'cost_subtotal' => $product->cost,
             ];
         }
@@ -196,6 +227,39 @@ class Index extends Component
         $this->calculateTotal();
     }
 
+    public function updatedCustomerId()
+    {
+        // When customer is selected, update price_list_type_id to customer's price list type
+        if ($this->customer_id) {
+            $customer = Customer::find($this->customer_id);
+            if ($customer && $customer->price_list_type_id) {
+                $this->price_list_type_id = $customer->price_list_type_id;
+            }
+        } else {
+            // If no customer selected, default to RETAIL
+            $this->price_list_type_id = PriceListType::where('type', 'RETAIL')->first()?->id;
+        }
+        
+        // Recalculate prices for all items in cart
+        $this->recalculateItemPrices();
+    }
+
+    public function updatedPriceListTypeId()
+    {
+        // When price type changes, recalculate prices for all items in cart
+        $this->recalculateItemPrices();
+    }
+
+    private function recalculateItemPrices()
+    {
+        foreach ($this->items as &$item) {
+            $newPrice = $this->getItemPrice($item['item_id']);
+            $item['price'] = $newPrice;
+            $item['subtotal'] = $newPrice * $item['qty'];
+        }
+        $this->calculateTotal();
+    }
+
     public function save()
     {
         if (empty($this->items)) {
@@ -233,6 +297,8 @@ class Index extends Component
 
                 // Update sale
                 $sale->update([
+                    'customer_id' => $this->customer_id,
+                    'price_list_type_id' => $this->price_list_type_id,
                     'total_cost' => $totalCost,
                     'total_price' => $this->total_price,
                     'paid_amount' => $paidAmount,
@@ -273,6 +339,8 @@ class Index extends Component
                 }
 
                 $sale = Sale::create([
+                    'customer_id' => $this->customer_id,
+                    'price_list_type_id' => $this->price_list_type_id,
                     'invoice_no' => 'INV-' . date('YmdHis'),
                     'total_cost' => $totalCost,
                     'total_price' => $this->total_price,
@@ -345,6 +413,8 @@ class Index extends Component
     {
         $sale = Sale::with('items')->find($id);
         $this->editingId = $id;
+        $this->customer_id = $sale->customer_id;
+        $this->price_list_type_id = $sale->price_list_type_id;
         
         $this->items = $sale->items->map(function ($item) {
             return [

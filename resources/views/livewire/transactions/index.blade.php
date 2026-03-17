@@ -107,6 +107,40 @@
                 <h3 class="font-bold text-lg mb-4">{{ $editingId ? 'Edit' : 'New' }} Transaction</h3>
                 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Customer & Price Type Selection -->
+                    <div class="lg:col-span-3 bg-base-200 rounded-lg p-4">
+                        <h4 class="font-semibold mb-3">Customer & Pricing</h4>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text">Customer (Optional)</span>
+                                </label>
+                                <select wire:model.live="customer_id" class="select select-bordered select-sm">
+                                    <option value="">Walk-in Customer</option>
+                                    @foreach($customers as $customer)
+                                        <option value="{{ $customer->id }}">{{ $customer->name }}{{ $customer->priceListType ? ' (' . $customer->priceListType->type . ')' : '' }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text">Price Type{{ $customer_id ? ' (Auto)' : '' }}</span>
+                                </label>
+                                @if($customer_id)
+                                    <div class="select select-bordered select-sm bg-base-300 cursor-not-allowed">
+                                        {{ $priceListTypes->firstWhere('id', $price_list_type_id)?->name }} ({{ $priceListTypes->firstWhere('id', $price_list_type_id)?->type }})
+                                    </div>
+                                @else
+                                    <select wire:model.live="price_list_type_id" class="select select-bordered select-sm">
+                                        @foreach($priceListTypes as $priceType)
+                                            <option value="{{ $priceType->id }}">{{ $priceType->name }} ({{ $priceType->type }})</option>
+                                        @endforeach
+                                    </select>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Products List -->
                     <div class="lg:col-span-2">
                         <div class="mb-3">
