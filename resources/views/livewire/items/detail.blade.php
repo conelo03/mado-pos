@@ -48,6 +48,12 @@
                 </div>
             </div>
         </div>
+
+        @if($item->type === 'PRODUCT')
+            <div class="lg:col-span-2">
+                @livewire('items.price-list-manager', ['itemId' => $item->id])
+            </div>
+        @endif
     </div>
 
     @if($item->type === 'PRODUCT')

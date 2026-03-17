@@ -11,7 +11,12 @@ users
 │       └── items
 │           ├── item_boms
 │           │   └── items (materials)
+│           ├── item_price_lists
+│           │   └── price_list_types
 │           └── stock_movements
+├── price_list_types
+│   ├── customers
+│   └── item_price_lists
 └── stock_movements
 ```
 
@@ -216,7 +221,153 @@ CREATE TABLE stock_movements (
 
 ---
 
-### 5. sales
+### 5. price_list_types
+Defines different pricing tiers for items.
+
+```sql
+CREATE TABLE price_list_types (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    type ENUM('RETAIL', 'GROSIR', 'MEMBER', 'RESELLER') NOT NULL,
+    description TEXT NULL,
+    created_by BIGINT NULL,
+    updated_by BIGINT NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    deleted_at TIMESTAMP NULL,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL
+);
+```
+
+**Fields:**
+- `id` - Unique identifier
+- `name` - Price list type name (e.g., "Retail Price", "Wholesale Price")
+- `type` - Type of pricing:
+  - RETAIL: Standard retail pricing
+  - GROSIR: Wholesale/bulk pricing
+  - MEMBER: Member-exclusive pricing
+  - RESELLER: Reseller pricing
+- `description` - Optional description of the price list type
+- `created_by` - User who created the price list type
+- `updated_by` - User who last updated the price list type
+- `created_at` - Creation timestamp
+- `updated_at` - Last update timestamp
+- `deleted_at` - Soft delete timestamp
+
+**Indexes:**
+- PRIMARY KEY: id
+- FOREIGN KEY: created_by
+- FOREIGN KEY: updated_by
+
+**Relationships:**
+- HasMany: customers
+- HasMany: item_price_lists
+- BelongsTo: users (created_by)
+- BelongsTo: users (updated_by)
+
+---
+
+### 6. customers
+Customer information with assigned price list type.
+
+```sql
+CREATE TABLE customers (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    price_list_type_id BIGINT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    phone VARCHAR(20) NULL,
+    address TEXT NULL,
+    created_by BIGINT NULL,
+    updated_by BIGINT NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    deleted_at TIMESTAMP NULL,
+    FOREIGN KEY (price_list_type_id) REFERENCES price_list_types(id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL
+);
+```
+
+**Fields:**
+- `id` - Unique identifier
+- `price_list_type_id` - Foreign key to price_list_types
+- `name` - Customer name
+- `phone` - Customer phone number (optional)
+- `address` - Customer address (optional)
+- `created_by` - User who created the customer record
+- `updated_by` - User who last updated the customer record
+- `created_at` - Creation timestamp
+- `updated_at` - Last update timestamp
+- `deleted_at` - Soft delete timestamp
+
+**Indexes:**
+- PRIMARY KEY: id
+- FOREIGN KEY: price_list_type_id
+- FOREIGN KEY: created_by
+- FOREIGN KEY: updated_by
+
+**Relationships:**
+- BelongsTo: price_list_types
+- BelongsTo: users (created_by)
+- BelongsTo: users (updated_by)
+
+---
+
+### 7. item_price_lists
+Item-specific pricing for different price list types.
+
+```sql
+CREATE TABLE item_price_lists (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    item_id BIGINT NOT NULL,
+    price_list_type_id BIGINT NOT NULL,
+    price DECIMAL(12, 2) NOT NULL,
+    created_by BIGINT NULL,
+    updated_by BIGINT NULL,
+    created_at TIMESTAMP NULL,
+    updated_at TIMESTAMP NULL,
+    deleted_at TIMESTAMP NULL,
+    UNIQUE KEY unique_item_price_list (item_id, price_list_type_id),
+    FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE,
+    FOREIGN KEY (price_list_type_id) REFERENCES price_list_types(id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL
+);
+```
+
+**Fields:**
+- `id` - Unique identifier
+- `item_id` - Foreign key to items
+- `price_list_type_id` - Foreign key to price_list_types
+- `price` - Price for this item in this price list type
+- `created_by` - User who created the price list entry
+- `updated_by` - User who last updated the price list entry
+- `created_at` - Creation timestamp
+- `updated_at` - Last update timestamp
+- `deleted_at` - Soft delete timestamp
+
+**Indexes:**
+- PRIMARY KEY: id
+- UNIQUE: (item_id, price_list_type_id) - Ensures one price per item per type
+- FOREIGN KEY: item_id
+- FOREIGN KEY: price_list_type_id
+- FOREIGN KEY: created_by
+- FOREIGN KEY: updated_by
+
+**Relationships:**
+- BelongsTo: items
+- BelongsTo: price_list_types
+- BelongsTo: users (created_by)
+- BelongsTo: users (updated_by)
+
+**Constraints:**
+- price must be >= 0
+- Each item can have only one price per price_list_type
+
+---
+
+### 8. sales
 Sales transaction records.
 
 ```sql
@@ -273,7 +424,7 @@ CREATE TABLE sales (
 
 ---
 
-### 6. sale_items
+### 9. sale_items
 Individual items in a sales transaction.
 
 ```sql

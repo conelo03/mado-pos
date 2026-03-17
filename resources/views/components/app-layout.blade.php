@@ -75,6 +75,18 @@
                 @endif
                 @if(auth()->user()->role === 'ADMIN' || auth()->user()->role === 'SUPERADMIN')
                     <li>
+                        <a href="{{ route('customers.index') }}" class="{{ request()->routeIs('customers.*') ? 'active bg-primary text-primary-content' : 'text-white hover:bg-slate-700' }}">
+                            <x-icon.users />
+                            Customers
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('price-list-types.index') }}" class="{{ request()->routeIs('price-list-types.*') ? 'active bg-primary text-primary-content' : 'text-white hover:bg-slate-700' }}">
+                            <x-icon.archive />
+                            Price List Types
+                        </a>
+                    </li>
+                    <li>
                         <a href="{{ route('items.index') }}" class="{{ request()->routeIs('items.*') ? 'active bg-primary text-primary-content' : 'text-white hover:bg-slate-700' }}">
                             <x-icon.package />
                             Items
@@ -102,7 +114,6 @@
                             </ul>
                         </details>
                     </li>
-
                 @endif
                 <li>
                     <a href="{{ route('transactions.index') }}" class="{{ request()->routeIs('transactions.*') ? 'active bg-primary text-primary-content' : 'text-white hover:bg-slate-700' }}">

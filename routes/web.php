@@ -20,6 +20,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/items/{id}', \App\Livewire\Items\Detail::class)->name('items.detail');
         Route::get('/stock-input', \App\Livewire\StockManagement\StockInput::class)->name('stock-input.index');
         Route::get('/stock-opname', \App\Livewire\StockManagement\StockOpname::class)->name('stock-opname.index');
+        Route::get('/price-list-types', \App\Livewire\PriceListTypes\Index::class)->name('price-list-types.index');
+        Route::get('/customers', \App\Livewire\Customers\Index::class)->name('customers.index');
     });
 });
 
