@@ -39,6 +39,8 @@ class Index extends Component
     public $refundId = null;
     public $cancelId = null;
 
+    protected $listeners = ['setCustomer'];
+
     public function mount()
     {
         $this->statusFilter = 'PAID';
@@ -225,6 +227,12 @@ class Index extends Component
     public function updatedPaidAmount()
     {
         $this->calculateTotal();
+    }
+
+    public function setCustomer($value)
+    {
+        $this->customer_id = $value;
+        $this->updatedCustomerId();
     }
 
     public function updatedCustomerId()
