@@ -6,13 +6,6 @@
             placeholder="Search price list types..." 
             class="input input-bordered w-full lg:w-64"
         >
-        <button 
-            wire:click="openModal" 
-            class="btn btn-primary w-full lg:w-auto"
-        >
-            <x-icon.plus />
-            Add Price List Type
-        </button>
     </div>
 
     <div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
@@ -44,12 +37,6 @@
                                     class="btn btn-xs btn-warning" title="Edit"
                                 >
                                     <x-icon.pencil />
-                                </button>
-                                <button 
-                                    wire:click="confirmDelete({{ $priceListType->id }})" 
-                                    class="btn btn-xs btn-error" title="Delete"
-                                >
-                                    <x-icon.trash />
                                 </button>
                             </div>
                         </td>
