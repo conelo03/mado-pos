@@ -22,7 +22,8 @@
                         <input 
                             type="email" 
                             name="email" 
-                            value="{{ old('email') }}"
+                            {{-- value="{{ old('email') }}" --}}
+                            value="superadmin@example.com"
                             class="input input-bordered w-full"
                             required
                         >
@@ -40,6 +41,7 @@
                         <input 
                             type="password" 
                             name="password" 
+                            value="password"
                             class="input input-bordered w-full"
                             required
                         >
