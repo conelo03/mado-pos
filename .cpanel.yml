@@ -18,5 +18,3 @@ deployment:
     - php -v
     - which composer
     - composer --version
-    - which npm
-    - npm -v
