@@ -1,13 +1,22 @@
+# deployment:
+#   tasks:
+#     - composer install --no-dev --prefer-dist --optimize-autoloader
+
+#     - npm ci
+#     - npm run build
+
+#     - php artisan migrate --force
+
+#     - php artisan optimize
+#     - php artisan config:cache
+#     - php artisan route:cache
+#     - php artisan view:cache
+
 deployment:
   tasks:
-    - composer install --no-dev --prefer-dist --optimize-autoloader
-
-    - npm ci
-    - npm run build
-
-    - php artisan migrate --force
-
-    - php artisan optimize
-    - php artisan config:cache
-    - php artisan route:cache
-    - php artisan view:cache
+    - which php
+    - php -v
+    - which composer
+    - composer --version
+    - which npm
+    - npm -v
