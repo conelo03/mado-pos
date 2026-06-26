@@ -18,3 +18,4 @@ deployment:
     - php -v
     - which composer
     - composer --version
+    - echo "OK" > deploy.log
