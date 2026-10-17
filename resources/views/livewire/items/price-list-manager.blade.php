@@ -105,13 +105,14 @@
                         <label class="label">
                             <span class="label-text">Price</span>
                         </label>
-                        <input 
+                        <x-currency-input wire-model="price" />
+                        {{-- <input 
                             wire:model="price" 
                             type="number" 
                             step="1" 
                             min="0"
                             class="input input-bordered w-full"
-                        >
+                        > --}}
                         @error('price') <span class="text-error text-sm">{{ $message }}</span> @enderror
                     </div>
 

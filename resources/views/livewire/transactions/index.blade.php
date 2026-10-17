@@ -310,14 +310,18 @@
                                 <span>Rp {{ number_format(array_sum(array_column($items, 'subtotal')), 0, ',', '.') }}</span>
                             </div>
 
-                            <div class="flex justify-between">
+                            <div class="flex justify-between items-center">
                                 <label>Discount:</label>
-                                <input 
-                                    type="number" 
-                                    step="1"
-                                    wire:model.live.debounce.500ms="discount"
-                                    class="input input-bordered input-sm w-24"
-                                >
+                                <div class="w-28">
+                                    <x-currency-input
+                                        wire-model="discount"
+                                        size="sm"
+                                        :live="true"
+                                        live-method="updatedDiscount"
+                                        :debounce="500"
+                                        placeholder="0"
+                                    />
+                                </div>
                             </div>
 
                             <div class="divider my-2"></div>
@@ -327,16 +331,17 @@
                                 <span>Rp {{ number_format($total_price, 0, ',', '.') }}</span>
                             </div>
 
-                            <div class="flex justify-between">
+                            <div class="flex justify-between items-center">
                                 <label>Paid Amount:</label>
-                                <input 
-                                    type="number" 
-                                    step="1"
-                                    wire:model.live="paid_amount"
-                                    {{-- @change="$wire.updatePaidAmount($event.target.value)" --}}
-                                    class="input input-bordered input-sm w-24"
-                                    placeholder="Auto"
-                                >
+                                <div class="w-28">
+                                    <x-currency-input
+                                        wire-model="paid_amount"
+                                        size="sm"
+                                        :live="true"
+                                        live-method="updatedPaidAmount"
+                                        placeholder="Auto"
+                                    />
+                                </div>
                             </div>
 
                             <div class="divider my-2"></div>

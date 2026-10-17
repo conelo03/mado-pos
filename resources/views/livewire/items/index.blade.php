@@ -146,12 +146,7 @@
                         <label class="label">
                             <span class="label-text">Cost Price / HPP</span>
                         </label>
-                        <input 
-                            type="number" 
-                            step="1"
-                            wire:model="cost" 
-                            class="input input-bordered w-full"
-                        >
+                        <x-currency-input wire-model="cost" />
                         @error('cost') <span class="text-error text-sm">{{ $message }}</span> @enderror
                     </div>
 
@@ -159,12 +154,7 @@
                         <label class="label">
                             <span class="label-text">Price</span>
                         </label>
-                        <input 
-                            type="number" 
-                            step="1"
-                            wire:model="price" 
-                            class="input input-bordered w-full"
-                        >
+                        <x-currency-input wire-model="price" />
                         @error('price') <span class="text-error text-sm">{{ $message }}</span> @enderror
                     </div>
 
