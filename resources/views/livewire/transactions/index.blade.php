@@ -103,7 +103,7 @@
     <!-- Modal -->
     @if($showModal)
         <div class="modal modal-open" onclick="event.target === this || event.stopPropagation()">
-            <div class="modal-box w-11/12 max-w-4xl">
+            <div class="modal-box w-11/12 max-w-4xl overflow-visible">
                 <h3 class="font-bold text-lg mb-4">{{ $editingId ? 'Edit' : 'New' }} Transaction</h3>
                 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -115,17 +115,85 @@
                                 <label class="label">
                                     <span class="label-text">Customer (Optional)</span>
                                 </label>
-                                <div wire:ignore>
-                                    <select
-                                        id="customer-select"
-                                        data-tom-select
-                                        data-livewire-event="setCustomer"
+                                <div
+                                    x-data="{
+                                        open: false,
+                                        search: '',
+                                        selectedLabel: '',
+                                        customers: {{ Js::from($customers->map(fn($c) => ['id' => $c->id, 'name' => $c->name . ($c->priceListType ? ' (' . $c->priceListType->type . ')' : '')])) }},
+                                        get filtered() {
+                                            if (!this.search) return this.customers;
+                                            return this.customers.filter(c => c.name.toLowerCase().includes(this.search.toLowerCase()));
+                                        },
+                                        select(customer) {
+                                            this.selectedLabel = customer ? customer.name : '';
+                                            this.search = '';
+                                            this.open = false;
+                                            $wire.setCustomer(customer ? customer.id : null);
+                                        },
+                                        clear() {
+                                            this.selectedLabel = '';
+                                            this.search = '';
+                                            this.open = false;
+                                            $wire.setCustomer(null);
+                                        }
+                                    }"
+                                    class="relative"
+                                >
+                                    <div class="flex gap-1">
+                                        <button
+                                            type="button"
+                                            @click="open = !open"
+                                            class="select select-bordered select-sm flex-1 text-left flex items-center justify-between h-9"
+                                        >
+                                            <span x-text="selectedLabel || 'Walk-in Customer'" :class="selectedLabel ? '' : 'opacity-50'"></span>
+                                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            x-show="selectedLabel"
+                                            @click="clear()"
+                                            class="btn btn-square btn-sm h-9 w-9"
+                                            title="Clear"
+                                        >
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        </button>
+                                    </div>
+
+                                    <div
+                                        x-show="open"
+                                        x-transition
+                                        @click.outside="open = false"
+                                        class="absolute z-50 w-full mt-1 bg-base-100 border border-base-300 rounded-box shadow-lg"
                                     >
-                                        <option value="">Walk-in Customer</option>
-                                        @foreach($customers as $customer)
-                                            <option value="{{ $customer->id }}">{{ $customer->name }}{{ $customer->priceListType ? ' (' . $customer->priceListType->type . ')' : '' }}</option>
-                                        @endforeach
-                                    </select>
+                                        <div class="p-2 border-b border-base-300">
+                                            <input
+                                                type="text"
+                                                x-model="search"
+                                                x-ref="searchInput"
+                                                @click.stop
+                                                placeholder="Search customer..."
+                                                class="input input-sm input-bordered w-full"
+                                                x-init="$watch('open', val => val && $nextTick(() => $refs.searchInput.focus()))"
+                                            >
+                                        </div>
+                                        <ul class="max-h-48 overflow-y-auto py-1">
+                                            <li
+                                                @click="clear()"
+                                                class="px-3 py-2 cursor-pointer hover:bg-base-200 text-sm opacity-60"
+                                            >Walk-in Customer</li>
+                                            <template x-if="filtered.length === 0">
+                                                <li class="px-3 py-2 text-sm opacity-50">No customers found</li>
+                                            </template>
+                                            <template x-for="customer in filtered" :key="customer.id">
+                                                <li
+                                                    @click="select(customer)"
+                                                    class="px-3 py-2 cursor-pointer hover:bg-base-200 text-sm"
+                                                    x-text="customer.name"
+                                                ></li>
+                                            </template>
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
                             <div class="form-control">

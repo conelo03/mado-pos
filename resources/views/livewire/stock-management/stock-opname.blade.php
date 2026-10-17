@@ -79,7 +79,7 @@
     <!-- Modal -->
     @if($showModal)
         <div class="modal modal-open">
-            <div class="modal-box">
+            <div class="modal-box overflow-visible">
                 <h3 class="font-bold text-lg mb-4">{{ $editingId ? 'Edit' : 'Add' }} Stock Opname</h3>
                 
                 <form wire:submit="save">
@@ -87,15 +87,72 @@
                         <label class="label">
                             <span class="label-text">Item</span>
                         </label>
-                        <select 
-                            wire:model="item_id" 
-                            class="select select-bordered w-full"
+                        <div
+                            x-data="{
+                                open: false,
+                                search: '',
+                                selectedLabel: '',
+                                items: {{ Js::from($items->map(fn($i) => ['id' => $i->id, 'name' => $i->name])) }},
+                                get filtered() {
+                                    if (!this.search) return this.items;
+                                    return this.items.filter(i => i.name.toLowerCase().includes(this.search.toLowerCase()));
+                                },
+                                select(item) {
+                                    this.selectedLabel = item.name;
+                                    this.search = '';
+                                    this.open = false;
+                                    $wire.set('item_id', item.id);
+                                },
+                                init() {
+                                    const current = {{ $item_id ?: 'null' }};
+                                    if (current) {
+                                        const found = this.items.find(i => i.id == current);
+                                        if (found) this.selectedLabel = found.name;
+                                    }
+                                }
+                            }"
+                            class="relative"
                         >
-                            <option value="">Select item</option>
-                            @foreach($items as $item)
-                                <option value="{{ $item->id }}">{{ $item->name }}</option>
-                            @endforeach
-                        </select>
+                            <button
+                                type="button"
+                                @click="open = !open"
+                                class="select select-bordered w-full text-left flex items-center justify-between"
+                            >
+                                <span x-text="selectedLabel || 'Select item...'" :class="selectedLabel ? '' : 'opacity-50'"></span>
+                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </button>
+
+                            <div
+                                x-show="open"
+                                x-transition
+                                @click.outside="open = false"
+                                class="absolute z-50 w-full mt-1 bg-base-100 border border-base-300 rounded-box shadow-lg"
+                            >
+                                <div class="p-2 border-b border-base-300">
+                                    <input
+                                        type="text"
+                                        x-model="search"
+                                        x-ref="searchInput"
+                                        @click.stop
+                                        placeholder="Search..."
+                                        class="input input-sm input-bordered w-full"
+                                        x-init="$watch('open', val => val && $nextTick(() => $refs.searchInput.focus()))"
+                                    >
+                                </div>
+                                <ul class="max-h-48 overflow-y-auto py-1">
+                                    <template x-if="filtered.length === 0">
+                                        <li class="px-3 py-2 text-sm opacity-50">No items found</li>
+                                    </template>
+                                    <template x-for="item in filtered" :key="item.id">
+                                        <li
+                                            @click="select(item)"
+                                            class="px-3 py-2 cursor-pointer hover:bg-base-200 text-sm"
+                                            x-text="item.name"
+                                        ></li>
+                                    </template>
+                                </ul>
+                            </div>
+                        </div>
                         @error('item_id') <span class="text-error text-sm">{{ $message }}</span> @enderror
                     </div>
 
