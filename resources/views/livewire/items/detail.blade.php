@@ -235,6 +235,8 @@
                                 <td>
                                     @if($movement->reference_type === 'SALE')
                                         Sale #{{ $movement->reference_id }}
+                                    @elseif($movement->reference_type === 'SALE_CANCEL')
+                                        Cancel Sale #{{ $movement->reference_id }}
                                     @elseif($movement->reference_type === 'PURCHASE')
                                         Stock Input
                                     @else

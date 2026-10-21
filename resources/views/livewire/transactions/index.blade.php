@@ -70,9 +70,9 @@
                                 >
                                     <x-icon.pencil />
                                 </button> --}}
-                                @if($sale->status === 'PAID')
-                                    <button 
-                                        wire:click="confirmRefund({{ $sale->id }})" 
+                                @if($sale->status === 'PAID' && (auth()->user()->role === 'ADMIN' || auth()->user()->role === 'SUPERADMIN'))
+                                    <button
+                                        wire:click="confirmRefund({{ $sale->id }})"
                                         class="btn btn-xs btn-warning" title="Refund"
                                     >
                                         <x-icon.arrow-uturn-left />
@@ -363,7 +363,9 @@
                             </button>
                             <button 
                                 type="button"
-                                wire:click="save" 
+                                wire:click="save"
+                                wire:loading.attr="disabled"
+                                wire:target="save"
                                 class="btn btn-primary btn-sm"
                             >
                                 <x-icon.check />
@@ -393,16 +395,30 @@
         confirmText="Refund"
         cancelText="Cancel"
         onConfirm="$wire.refund({{ $refundId ?? 'null' }})"
-    />
+    >
+        <textarea
+            wire:model="statusReason"
+            class="textarea textarea-bordered w-full"
+            rows="2"
+            placeholder="Reason (optional)"
+        ></textarea>
+    </x-confirm-refund-dialog>
 
     <!-- Confirm Cancel Dialog -->
-    <x-confirm-cancel-dialog 
+    <x-confirm-cancel-dialog
         title="Cancel Transaction"
         message="Are you sure you want to cancel this transaction? Stock will be restored and status will be set to VOID."
         confirmText="Cancel"
         cancelText="Close"
         onConfirm="$wire.cancel({{ $cancelId ?? 'null' }})"
-    />
+    >
+        <textarea
+            wire:model="statusReason"
+            class="textarea textarea-bordered w-full"
+            rows="2"
+            placeholder="Reason (optional)"
+        ></textarea>
+    </x-confirm-cancel-dialog>
 
     <!-- View Modal -->
     @if($showViewModal)
@@ -414,6 +430,21 @@
                         <p class="text-sm text-base-content/60">{{ $viewDate }}</p>
                     </div>
                 </div>
+
+                @if(in_array($viewStatus, ['REFUND', 'VOID']))
+                    <div class="bg-base-200 rounded-lg p-4 mb-6 text-sm space-y-1">
+                        <div>
+                            <span class="font-semibold">{{ $viewStatus === 'REFUND' ? 'Refunded' : 'Cancelled' }} by:</span>
+                            {{ $viewStatusBy }} · {{ $viewStatusAt }}
+                        </div>
+                        @if($viewStatusReason)
+                            <div>
+                                <span class="font-semibold">Reason:</span>
+                                {{ $viewStatusReason }}
+                            </div>
+                        @endif
+                    </div>
+                @endif
                 
                 <div class="space-y-6">
                     <!-- Items -->

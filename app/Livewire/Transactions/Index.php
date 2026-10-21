@@ -30,6 +30,10 @@ class Index extends Component
     public $viewItems = [];
     public $viewInvoiceNo = '';
     public $viewDate = '';
+    public $viewStatus = '';
+    public $viewStatusBy = '';
+    public $viewStatusAt = '';
+    public $viewStatusReason = '';
     public $discount = null;
     public $paid_amount = null;
     public $total_price = 0;
@@ -38,6 +42,7 @@ class Index extends Component
     public $deleteId = null;
     public $refundId = null;
     public $cancelId = null;
+    public $statusReason = '';
 
     protected $listeners = ['setCustomer'];
 
@@ -87,11 +92,17 @@ class Index extends Component
 
     public function openViewModal($id)
     {
-        $sale = Sale::with('items')->find($id);
+        $sale = Sale::with('items', 'refundedBy', 'cancelledBy')->find($id);
         $this->viewingId = $id;
         $this->viewInvoiceNo = $sale->invoice_no;
         $this->viewDate = $sale->created_at->format('d M Y H:i');
-        
+
+        $isRefund = $sale->status === 'REFUND';
+        $this->viewStatus = $sale->status;
+        $this->viewStatusBy = ($isRefund ? $sale->refundedBy : $sale->cancelledBy)?->name ?? '-';
+        $this->viewStatusAt = ($isRefund ? $sale->refunded_at : $sale->cancelled_at)?->format('d M Y H:i') ?? '-';
+        $this->viewStatusReason = $sale->status_reason ?? '';
+
         $this->viewItems = $sale->items->map(function ($item) {
             return [
                 'product_name' => $item->item->name,
@@ -349,7 +360,7 @@ class Index extends Component
                 $sale = Sale::create([
                     'customer_id' => $this->customer_id,
                     'price_list_type_id' => $this->price_list_type_id,
-                    'invoice_no' => 'INV-' . date('YmdHis'),
+                    'invoice_no' => (string) Str::uuid(),
                     'total_cost' => $totalCost,
                     'total_price' => $this->total_price,
                     'paid_amount' => $paidAmount,
@@ -357,6 +368,10 @@ class Index extends Component
                     'discount' => $discount,
                     'status' => 'PAID',
                     'created_by' => auth()->id(),
+                ]);
+
+                $sale->update([
+                    'invoice_no' => 'INV-' . $sale->created_at->format('Ymd') . '-' . str_pad($sale->id, 6, '0', STR_PAD_LEFT),
                 ]);
 
                 foreach ($this->items as $item) {
@@ -453,12 +468,14 @@ class Index extends Component
     public function confirmRefund($id)
     {
         $this->refundId = $id;
+        $this->statusReason = '';
         $this->dispatch('confirm-refund-dialog');
     }
 
     public function confirmCancel($id)
     {
         $this->cancelId = $id;
+        $this->statusReason = '';
         $this->dispatch('confirm-cancel-dialog');
     }
 
@@ -503,31 +520,84 @@ class Index extends Component
 
     public function refund($id)
     {
-        $sale = Sale::find($id);
-        $sale->update(['status' => 'REFUND']);
-        $this->refundId = null;
-        $this->dispatch('notify', message: 'Transaction refunded successfully');
+        $this->authorizeStatusChange();
+
+        $refunded = DB::transaction(function () use ($id) {
+            $sale = Sale::lockForUpdate()->find($id);
+
+            if ($sale?->status !== 'PAID') {
+                return false;
+            }
+
+            $sale->update([
+                'status' => 'REFUND',
+                'refunded_at' => now(),
+                'refunded_by' => auth()->id(),
+                'status_reason' => trim((string) $this->statusReason) ?: null,
+                'updated_by' => auth()->id(),
+            ]);
+
+            return true;
+        });
+
+        $this->reset(['refundId', 'statusReason']);
+        $this->dispatch('notify', message: $refunded
+            ? 'Transaction refunded successfully'
+            : 'Transaction is no longer PAID');
     }
 
     public function cancel($id)
     {
-        DB::transaction(function () use ($id) {
-            $sale = Sale::find($id);
-            
-            // Restore item stock
-            foreach ($sale->items as $item) {
-                $this->restoreItemStock($item->item_id, $item->qty, $sale->id);
+        $this->authorizeStatusChange();
+
+        $cancelled = DB::transaction(function () use ($id) {
+            $sale = Sale::lockForUpdate()->find($id);
+
+            if ($sale?->status !== 'PAID') {
+                return false;
             }
 
-            // Delete stock movements
-            StockMovement::where('reference_id', $sale->id)
+            $saleMovements = StockMovement::where('reference_id', $sale->id)
                 ->where('reference_type', 'SALE')
-                ->delete();
+                ->get();
 
-            $sale->update(['status' => 'VOID']);
+            foreach ($saleMovements as $movement) {
+                Item::withTrashed()->whereKey($movement->item_id)->increment('stock', $movement->qty);
+
+                StockMovement::create([
+                    'item_id' => $movement->item_id,
+                    'type' => 'IN',
+                    'qty' => $movement->qty,
+                    'reference_id' => $sale->id,
+                    'reference_type' => 'SALE_CANCEL',
+                    'date' => now()->toDateString(),
+                    'created_by' => auth()->id(),
+                ]);
+            }
+
+            $sale->update([
+                'status' => 'VOID',
+                'cancelled_at' => now(),
+                'cancelled_by' => auth()->id(),
+                'status_reason' => trim((string) $this->statusReason) ?: null,
+                'updated_by' => auth()->id(),
+            ]);
+
+            return true;
         });
 
-        $this->cancelId = null;
-        $this->dispatch('notify', message: 'Transaction cancelled successfully');
+        $this->reset(['cancelId', 'statusReason']);
+        $this->dispatch('notify', message: $cancelled
+            ? 'Transaction cancelled successfully'
+            : 'Transaction is no longer PAID');
+    }
+
+    private function authorizeStatusChange()
+    {
+        $role = auth()->user()->role;
+
+        if ($role !== 'ADMIN' && $role !== 'SUPERADMIN') {
+            abort(403, 'Unauthorized access');
+        }
     }
 }

@@ -13,7 +13,11 @@
     <!-- Dialog -->
     <div class="relative bg-base-100 rounded-lg shadow-lg p-6 max-w-sm mx-4">
         <h3 class="font-bold text-lg mb-2">{{ $title }}</h3>
-        <p class="text-sm opacity-75 mb-6">{{ $message }}</p>
+        <p class="text-sm opacity-75 {{ $slot->isEmpty() ? 'mb-6' : 'mb-4' }}">{{ $message }}</p>
+
+        @if($slot->isNotEmpty())
+            <div class="mb-6">{{ $slot }}</div>
+        @endif
         
         <div class="flex gap-3 justify-end">
             <button 

@@ -171,7 +171,7 @@ CREATE TABLE stock_movements (
     type ENUM('IN', 'OUT') NOT NULL,
     qty DECIMAL(12, 2) NOT NULL,
     reference_id BIGINT NULL,
-    reference_type ENUM('PURCHASE', 'SALE', 'ADJUSTMENT', 'WASTE') NULL,
+    reference_type ENUM('PURCHASE', 'SALE', 'SALE_CANCEL', 'ADJUSTMENT', 'WASTE') NULL,
     date DATE NOT NULL,
     note TEXT NULL,
     created_by BIGINT NOT NULL,
@@ -193,6 +193,7 @@ CREATE TABLE stock_movements (
 - `reference_type` - Type of reference:
   - PURCHASE: Stock input
   - SALE: Sales transaction
+  - SALE_CANCEL: Reversal of a cancelled sale (type IN, reference_id = sale id)
   - ADJUSTMENT: Stock adjustment
   - WASTE: Stock waste/loss
 - `date` - Date of movement
@@ -379,11 +380,18 @@ CREATE TABLE sales (
     change_amount DECIMAL(12, 2) NOT NULL,
     discount DECIMAL(12, 2) DEFAULT 0,
     status ENUM('PAID', 'VOID', 'REFUND') DEFAULT 'PAID',
+    refunded_at TIMESTAMP NULL,
+    refunded_by BIGINT NULL,
+    cancelled_at TIMESTAMP NULL,
+    cancelled_by BIGINT NULL,
+    status_reason TEXT NULL,
     created_by BIGINT NOT NULL,
     updated_by BIGINT NULL,
     created_at TIMESTAMP NULL,
     updated_at TIMESTAMP NULL,
     deleted_at TIMESTAMP NULL,
+    FOREIGN KEY (refunded_by) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (cancelled_by) REFERENCES users(id) ON DELETE SET NULL,
     FOREIGN KEY (created_by) REFERENCES users(id),
     FOREIGN KEY (updated_by) REFERENCES users(id)
 );
@@ -391,7 +399,7 @@ CREATE TABLE sales (
 
 **Fields:**
 - `id` - Unique identifier
-- `invoice_no` - Unique invoice number (format: INV-YYYYMMDDHHmmss)
+- `invoice_no` - Unique invoice number (format: INV-YYYYMMDD-{id padded to 6 digits}, e.g. INV-20261021-000123; sales before 21 Oct 2026 use INV-YYYYMMDDHHmmss)
 - `total_price` - Total transaction amount after discount
 - `paid_amount` - Amount paid by customer
 - `change_amount` - Change given to customer
@@ -400,6 +408,9 @@ CREATE TABLE sales (
   - PAID: Completed transaction
   - VOID: Cancelled transaction
   - REFUND: Refunded transaction
+- `refunded_at`, `refunded_by` - When and by whom the sale was refunded
+- `cancelled_at`, `cancelled_by` - When and by whom the sale was cancelled (VOID)
+- `status_reason` - Optional reason entered on refund/cancel
 - `created_by` - User who created the transaction
 - `updated_by` - User who updated the transaction
 - `created_at` - Creation timestamp
@@ -543,6 +554,22 @@ CREATE TABLE sale_items (
    ↓
 6. Transaction deletion complete
 ```
+
+### Transaction Cancel Flow
+
+```
+1. User cancels a PAID sale (optional reason)
+   ↓
+2. For each stock_movement of this sale (reference_type = SALE):
+   ├─ Increment item.stock by movement.qty
+   └─ Create stock_movement (type=IN, reference_type=SALE_CANCEL)
+   ↓
+3. Update sale.status = VOID, cancelled_at, cancelled_by, status_reason
+   ↓
+4. Original SALE movements are kept as history
+```
+
+Refund only sets status = REFUND with refunded_at, refunded_by, status_reason. Stock is not returned.
 
 ---
 

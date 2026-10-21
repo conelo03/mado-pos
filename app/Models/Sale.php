@@ -21,6 +21,11 @@ class Sale extends Model
         'change_amount',
         'discount',
         'status',
+        'refunded_at',
+        'refunded_by',
+        'cancelled_at',
+        'cancelled_by',
+        'status_reason',
         'created_by',
         'updated_by',
     ];
@@ -31,6 +36,8 @@ class Sale extends Model
         'paid_amount' => 'decimal:2',
         'change_amount' => 'decimal:2',
         'discount' => 'decimal:2',
+        'refunded_at' => 'datetime',
+        'cancelled_at' => 'datetime',
     ];
 
     public function items(): HasMany
@@ -56,5 +63,15 @@ class Sale extends Model
     public function updatedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function refundedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'refunded_by');
+    }
+
+    public function cancelledBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'cancelled_by');
     }
 }
