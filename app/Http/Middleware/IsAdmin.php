@@ -10,7 +10,7 @@ class IsAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && (auth()->user()->role === 'ADMIN' || auth()->user()->role === 'SUPERADMIN')) {
+        if (auth()->check() && (auth()->user()->role === 'ADMIN' || auth()->user()->role === 'OWNER')) {
             return $next($request);
         }
 

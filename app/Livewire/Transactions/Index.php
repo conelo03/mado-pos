@@ -34,7 +34,9 @@ class Index extends Component
     public $viewStatusBy = '';
     public $viewStatusAt = '';
     public $viewStatusReason = '';
+    public $viewPaymentMethod = '';
     public $discount = null;
+    public $payment_method = 'CASH';
     public $paid_amount = null;
     public $total_price = 0;
     public $change_amount = 0;
@@ -80,7 +82,7 @@ class Index extends Component
 
     public function openModal()
     {
-        $this->reset(['editingId', 'items', 'discount', 'paid_amount', 'total_price', 'change_amount', 'productSearch', 'customer_id']);
+        $this->reset(['editingId', 'items', 'discount', 'payment_method', 'paid_amount', 'total_price', 'change_amount', 'productSearch', 'customer_id']);
         $this->price_list_type_id = PriceListType::where('type', 'RETAIL')->first()?->id;
         $this->showModal = true;
     }
@@ -102,6 +104,7 @@ class Index extends Component
         $this->viewStatusBy = ($isRefund ? $sale->refundedBy : $sale->cancelledBy)?->name ?? '-';
         $this->viewStatusAt = ($isRefund ? $sale->refunded_at : $sale->cancelled_at)?->translatedFormat('d M Y H:i') ?? '-';
         $this->viewStatusReason = $sale->status_reason ?? '';
+        $this->viewPaymentMethod = $sale->payment_method;
 
         $this->viewItems = $sale->items->map(function ($item) {
             return [
@@ -240,6 +243,15 @@ class Index extends Component
         $this->calculateTotal();
     }
 
+    public function updatedPaymentMethod()
+    {
+        if ($this->payment_method === 'NON_CASH') {
+            $this->paid_amount = null;
+        }
+
+        $this->calculateTotal();
+    }
+
     public function setCustomer($value)
     {
         $this->customer_id = $value;
@@ -286,10 +298,12 @@ class Index extends Component
             return;
         }
 
+        $this->validate(['payment_method' => 'required|in:CASH,NON_CASH']);
+
         $discount = (float) $this->discount ?? 0;
         $paidAmount = $this->total_price;
 
-        if ($this->paid_amount > 0) {
+        if ($this->payment_method === 'CASH' && $this->paid_amount > 0) {
             $paidAmount = $this->paid_amount;
         }
 
@@ -323,6 +337,7 @@ class Index extends Component
                     'paid_amount' => $paidAmount,
                     'change_amount' => $paidAmount - $this->total_price,
                     'discount' => $discount,
+                    'payment_method' => $this->payment_method,
                     'updated_by' => auth()->id(),
                 ]);
 
@@ -366,6 +381,7 @@ class Index extends Component
                     'paid_amount' => $paidAmount,
                     'change_amount' => $paidAmount - $this->total_price,
                     'discount' => $discount,
+                    'payment_method' => $this->payment_method,
                     'status' => 'PAID',
                     'created_by' => auth()->id(),
                 ]);
@@ -452,6 +468,7 @@ class Index extends Component
         })->toArray();
 
         $this->discount = $sale->discount;
+        $this->payment_method = $sale->payment_method;
         $this->paid_amount = $sale->paid_amount;
         $this->total_price = $sale->total_price;
         $this->change_amount = $sale->change_amount;
@@ -596,7 +613,7 @@ class Index extends Component
     {
         $role = auth()->user()->role;
 
-        if ($role !== 'ADMIN' && $role !== 'SUPERADMIN') {
+        if ($role !== 'ADMIN' && $role !== 'OWNER') {
             abort(403, 'Unauthorized access');
         }
     }

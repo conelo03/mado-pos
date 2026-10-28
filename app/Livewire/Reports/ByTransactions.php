@@ -15,6 +15,7 @@ class ByTransactions extends Component
     public $status = 'PAID';
     public $customerFilter = '';
     public $priceListTypeFilter = '';
+    public $paymentMethodFilter = '';
 
     public function mount()
     {
@@ -42,6 +43,10 @@ class ByTransactions extends Component
             $query->where('price_list_type_id', $this->priceListTypeFilter);
         }
 
+        if ($this->paymentMethodFilter) {
+            $query->where('payment_method', $this->paymentMethodFilter);
+        }
+
         $sales = $query->orderBy('created_at', 'desc')->paginate(10);
 
         $totalQuery = Sale::whereBetween('created_at', [
@@ -59,6 +64,10 @@ class ByTransactions extends Component
 
         if ($this->priceListTypeFilter) {
             $totalQuery->where('price_list_type_id', $this->priceListTypeFilter);
+        }
+
+        if ($this->paymentMethodFilter) {
+            $totalQuery->where('payment_method', $this->paymentMethodFilter);
         }
 
         $totalRevenue = $totalQuery->sum('total_price');

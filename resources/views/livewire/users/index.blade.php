@@ -33,7 +33,7 @@
                         <td>{{ $user->name }}</td>
                         <td>{{ $user->email }}</td>
                         <td>
-                            <div class="badge {{ $user->role === 'SUPERADMIN' ? 'badge-error' : ($user->role === 'ADMIN' ? 'badge-primary' : 'badge-secondary') }}">
+                            <div class="badge {{ $user->role === 'OWNER' ? 'badge-error' : ($user->role === 'ADMIN' ? 'badge-primary' : 'badge-secondary') }}">
                                 {{ __($user->role) }}
                             </div>
                         </td>
@@ -120,7 +120,7 @@
                         >
                             <option value="CASHIER">{{ __('CASHIER') }}</option>
                             <option value="ADMIN">ADMIN</option>
-                            <option value="SUPERADMIN">SUPERADMIN</option>
+                            <option value="OWNER">OWNER</option>
                         </select>
                         @error('role') <span class="text-error text-sm">{{ $message }}</span> @enderror
                     </div>

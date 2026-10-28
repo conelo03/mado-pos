@@ -212,6 +212,11 @@
             </div>
             
             <div class="summary-row">
+                <span>{{ __('Payment') }}:</span>
+                <span>{{ \App\Models\Sale::paymentMethodLabel($sale->payment_method) }}</span>
+            </div>
+
+            <div class="summary-row">
                 <span>{{ __('Paid') }}:</span>
                 <span>Rp {{ number_format($sale->paid_amount, 0, ',', '.') }}</span>
             </div>

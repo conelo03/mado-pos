@@ -76,7 +76,7 @@
                         {{ __('Dashboard') }}
                     </a>
                 </li>
-                @if(auth()->user()->role === 'SUPERADMIN')
+                @if(auth()->user()->role === 'OWNER')
                     <li>
                         <a href="{{ route('users.index') }}" class="{{ request()->routeIs('users.*') ? 'active bg-primary text-primary-content' : 'text-white hover:bg-slate-700' }}">
                             <x-icon.users />
@@ -84,7 +84,7 @@
                         </a>
                     </li>
                 @endif
-                @if(auth()->user()->role === 'ADMIN' || auth()->user()->role === 'SUPERADMIN')
+                @if(auth()->user()->role === 'ADMIN' || auth()->user()->role === 'OWNER')
                     <li>
                         <a href="{{ route('customers.index') }}" class="{{ request()->routeIs('customers.*') ? 'active bg-primary text-primary-content' : 'text-white hover:bg-slate-700' }}">
                             <x-icon.users />
@@ -132,12 +132,20 @@
                         {{ __('Transactions') }}
                     </a>
                 </li>
-                @if(auth()->user()->role === 'SUPERADMIN')
+                @if(auth()->user()->role === 'ADMIN' || auth()->user()->role === 'OWNER')
+                    <li>
+                        <a href="{{ route('expenses.index') }}" class="{{ request()->routeIs('expenses.*') ? 'active bg-primary text-primary-content' : 'text-white hover:bg-slate-700' }}">
+                            <x-icon.banknotes />
+                            {{ __('Expenses') }}
+                        </a>
+                    </li>
+                @endif
+                @if(auth()->user()->role === 'OWNER')
                     <li>
                         <details @if(request()->routeIs('reports.*')) open @endif>
                             <summary class="text-white hover:bg-slate-700">
                                 <x-icon.chart-bar />
-                                {{ __('Sales Reports') }}
+                                {{ __('Reports') }}
                             </summary>
                             <ul class="space-y-2">
                                 <li>
@@ -150,6 +158,12 @@
                                     <a href="{{ route('reports.by-transactions') }}" class="{{ request()->routeIs('reports.by-transactions') ? 'active bg-primary text-primary-content' : 'text-white hover:bg-slate-700' }}">
                                         <x-icon.shopping-cart />
                                         {{ __('By Transactions') }}
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('reports.profit-loss') }}" class="{{ request()->routeIs('reports.profit-loss') ? 'active bg-primary text-primary-content' : 'text-white hover:bg-slate-700' }}">
+                                        <x-icon.chart-bar />
+                                        {{ __('Profit & Loss') }}
                                     </a>
                                 </li>
                             </ul>

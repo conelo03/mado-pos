@@ -11,12 +11,12 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $superadmin = User::firstOrCreate(
+        $owner = User::firstOrCreate(
             ['email' => 'superadmin@example.com'],
             [
-                'name' => 'Superadmin',
+                'name' => 'Owner',
                 'password' => Hash::make('password'),
-                'role' => 'SUPERADMIN',
+                'role' => 'OWNER',
             ]
         );
 
@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Harga Retail',
                 'description' => 'Standard retail pricing for walk-in customers',
-                'created_by' => $superadmin->id,
+                'created_by' => $owner->id,
             ]
         );
 
@@ -35,7 +35,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Harga Grosir',
                 'description' => 'Wholesale pricing for bulk purchases',
-                'created_by' => $superadmin->id,
+                'created_by' => $owner->id,
             ]
         );
 
@@ -44,7 +44,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Harga Member',
                 'description' => 'Special pricing for registered members',
-                'created_by' => $superadmin->id,
+                'created_by' => $owner->id,
             ]
         );
 
@@ -53,7 +53,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Harga Reseller',
                 'description' => 'Pricing for authorized resellers',
-                'created_by' => $superadmin->id,
+                'created_by' => $owner->id,
             ]
         );
     }

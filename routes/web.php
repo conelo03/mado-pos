@@ -10,10 +10,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/transactions', TransactionsIndex::class)->name('transactions.index');
     Route::get('/transactions/{id}/print', [\App\Http\Controllers\TransactionPrintController::class, 'show'])->name('transactions.print');
 
-    Route::middleware(['superadmin'])->group(function () {
+    Route::middleware(['owner'])->group(function () {
         Route::get('/users', \App\Livewire\Users\Index::class)->name('users.index');
         Route::get('/reports/by-products', \App\Livewire\Reports\ByProducts::class)->name('reports.by-products');
         Route::get('/reports/by-transactions', \App\Livewire\Reports\ByTransactions::class)->name('reports.by-transactions');
+        Route::get('/reports/profit-loss', \App\Livewire\Reports\ProfitLoss::class)->name('reports.profit-loss');
     });
 
     Route::middleware(['admin'])->group(function () {
@@ -23,6 +24,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/stock-opname', \App\Livewire\StockManagement\StockOpname::class)->name('stock-opname.index');
         Route::get('/price-list-types', \App\Livewire\PriceListTypes\Index::class)->name('price-list-types.index');
         Route::get('/customers', \App\Livewire\Customers\Index::class)->name('customers.index');
+        Route::get('/expenses', \App\Livewire\Expenses\Index::class)->name('expenses.index');
     });
 });
 

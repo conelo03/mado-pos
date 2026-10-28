@@ -164,6 +164,8 @@ return [
 
     'attributes' => [
         'address' => 'alamat',
+        'amount' => 'jumlah',
+        'category' => 'kategori',
         'bom_qty' => 'jumlah',
         'cost' => 'harga modal',
         'date' => 'tanggal',
@@ -174,6 +176,7 @@ return [
         'minimum_stock' => 'stok minimum',
         'name' => 'nama',
         'note' => 'catatan',
+        'payment_method' => 'metode pembayaran',
         'password' => 'kata sandi',
         'phone' => 'telepon',
         'price' => 'harga',

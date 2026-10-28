@@ -20,6 +20,7 @@ class Sale extends Model
         'paid_amount',
         'change_amount',
         'discount',
+        'payment_method',
         'status',
         'refunded_at',
         'refunded_by',
@@ -39,6 +40,11 @@ class Sale extends Model
         'refunded_at' => 'datetime',
         'cancelled_at' => 'datetime',
     ];
+
+    public static function paymentMethodLabel(?string $method): string
+    {
+        return $method === 'NON_CASH' ? __('Non-cash') : __('Cash');
+    }
 
     public function items(): HasMany
     {

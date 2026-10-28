@@ -34,6 +34,7 @@
                     <th>{{ __('Invoice') }}</th>
                     <th>{{ __('Date') }}</th>
                     <th>{{ __('Total') }}</th>
+                    <th>{{ __('Payment') }}</th>
                     <th>{{ __('Status') }}</th>
                     <th style="width: 100px;">{{ __('Actions') }}</th>
                 </tr>
@@ -45,6 +46,11 @@
                         <td>{{ $sale->invoice_no }}</td>
                         <td>{{ $sale->created_at->translatedFormat('d M Y H:i') }}</td>
                         <td>Rp {{ number_format($sale->total_price, 0, ',', '.') }}</td>
+                        <td>
+                            <div class="badge badge-outline {{ $sale->payment_method === 'NON_CASH' ? 'badge-info' : '' }}">
+                                {{ \App\Models\Sale::paymentMethodLabel($sale->payment_method) }}
+                            </div>
+                        </td>
                         <td>
                             <div class="badge {{ $sale->status === 'PAID' ? 'badge-success' : ($sale->status === 'VOID' ? 'badge-error' : 'badge-warning') }}">
                                 {{ __($sale->status) }}
@@ -70,7 +76,7 @@
                                 >
                                     <x-icon.pencil />
                                 </button> --}}
-                                @if($sale->status === 'PAID' && (auth()->user()->role === 'ADMIN' || auth()->user()->role === 'SUPERADMIN'))
+                                @if($sale->status === 'PAID' && (auth()->user()->role === 'ADMIN' || auth()->user()->role === 'OWNER'))
                                     <button
                                         wire:click="confirmRefund({{ $sale->id }})"
                                         class="btn btn-xs btn-warning" title="{{ __('Refund') }}"
@@ -89,7 +95,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center">{{ __('No transactions found') }}</td>
+                        <td colspan="7" class="text-center">{{ __('No transactions found') }}</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -332,24 +338,39 @@
                             </div>
 
                             <div class="flex justify-between items-center">
-                                <label>{{ __('Paid Amount') }}:</label>
-                                <div class="w-28">
-                                    <x-currency-input
-                                        wire-model="paid_amount"
-                                        size="sm"
-                                        :live="true"
-                                        live-method="updatedPaidAmount"
-                                        :placeholder="__('Auto')"
-                                    />
+                                <label>{{ __('Payment') }}:</label>
+                                <div class="join">
+                                    @foreach (['CASH', 'NON_CASH'] as $method)
+                                        <button
+                                            type="button"
+                                            wire:click="$set('payment_method', '{{ $method }}')"
+                                            class="join-item btn btn-xs {{ $payment_method === $method ? 'btn-primary' : 'btn-ghost border-base-300' }}"
+                                        >{{ \App\Models\Sale::paymentMethodLabel($method) }}</button>
+                                    @endforeach
                                 </div>
                             </div>
 
-                            <div class="divider my-2"></div>
+                            @if($payment_method === 'CASH')
+                                <div class="flex justify-between items-center">
+                                    <label>{{ __('Paid Amount') }}:</label>
+                                    <div class="w-28">
+                                        <x-currency-input
+                                            wire-model="paid_amount"
+                                            size="sm"
+                                            :live="true"
+                                            live-method="updatedPaidAmount"
+                                            :placeholder="__('Auto')"
+                                        />
+                                    </div>
+                                </div>
 
-                            <div class="flex justify-between font-semibold">
-                                <span>{{ __('Change') }}:</span>
-                                <span>Rp {{ number_format($change_amount, 0, ',', '.') }}</span>
-                            </div>
+                                <div class="divider my-2"></div>
+
+                                <div class="flex justify-between font-semibold">
+                                    <span>{{ __('Change') }}:</span>
+                                    <span>Rp {{ number_format($change_amount, 0, ',', '.') }}</span>
+                                </div>
+                            @endif
                         </div>
 
                         <div class="modal-action mt-6">
@@ -495,6 +516,11 @@
                         <div class="flex justify-between font-semibold">
                             <span>{{ __('Total') }}:</span>
                             <span>Rp {{ number_format($total_price, 0, ',', '.') }}</span>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <span>{{ __('Payment') }}:</span>
+                            <span>{{ \App\Models\Sale::paymentMethodLabel($viewPaymentMethod) }}</span>
                         </div>
 
                         <div class="flex justify-between">
