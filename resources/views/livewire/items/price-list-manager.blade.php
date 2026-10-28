@@ -2,14 +2,14 @@
     <div class="card bg-base-100 shadow-md">
         <div class="card-body">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="card-title">Price Lists</h3>
+                <h3 class="card-title">{{ __('Price Lists') }}</h3>
                 @if($availablePriceListTypes->count() > 0)
                     <button 
                         wire:click="openModal" 
                         class="btn btn-sm btn-primary"
                     >
                         <x-icon.plus />
-                        Add Price
+                        {{ __('Add Price') }}
                     </button>
                 @endif
             </div>
@@ -19,9 +19,9 @@
                     <table class="table table-sm w-full">
                         <thead>
                             <tr>
-                                <th>Price List Type</th>
-                                <th>Price</th>
-                                <th style="width: 80px;">Actions</th>
+                                <th>{{ __('Price List Type') }}</th>
+                                <th>{{ __('Price') }}</th>
+                                <th style="width: 80px;">{{ __('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -42,13 +42,13 @@
                                         <div class="flex gap-1">
                                             <button 
                                                 wire:click="edit({{ $priceList->id }})" 
-                                                class="btn btn-xs btn-warning" title="Edit"
+                                                class="btn btn-xs btn-warning" title="{{ __('Edit') }}"
                                             >
                                                 <x-icon.pencil />
                                             </button>
                                             <button 
                                                 wire:click="confirmDelete({{ $priceList->id }})" 
-                                                class="btn btn-xs btn-error" title="Delete"
+                                                class="btn btn-xs btn-error" title="{{ __('Delete') }}"
                                             >
                                                 <x-icon.trash />
                                             </button>
@@ -61,13 +61,13 @@
                 </div>
             @else
                 <div class="text-center py-8 text-base-content/60">
-                    <p>No price lists configured for this item.</p>
+                    <p>{{ __('No price lists configured for this item.') }}</p>
                     @if($availablePriceListTypes->count() > 0)
                         <button 
                             wire:click="openModal" 
                             class="btn btn-sm btn-ghost mt-2"
                         >
-                            Add the first price list
+                            {{ __('Add the first price list') }}
                         </button>
                     @endif
                 </div>
@@ -79,15 +79,15 @@
     @if($showModal)
         <div class="modal modal-open">
             <div class="modal-box">
-                <h3 class="font-bold text-lg mb-4">{{ $editingId ? 'Edit' : 'Add' }} Price List</h3>
+                <h3 class="font-bold text-lg mb-4">{{ $editingId ? __('Edit Price List') : __('Add Price List') }}</h3>
                 
                 <form wire:submit="save">
                     <div class="form-control w-full mb-4">
                         <label class="label">
-                            <span class="label-text">Price List Type</span>
+                            <span class="label-text">{{ __('Price List Type') }}</span>
                         </label>
                         <select wire:model="price_list_type_id" class="select select-bordered w-full">
-                            <option value="">Select Price List Type</option>
+                            <option value="">{{ __('Select Price List Type') }}</option>
                             @if($editingId)
                                 @foreach($allPriceListTypes as $type)
                                     <option value="{{ $type->id }}">{{ $type->name }} ({{ $type->type }})</option>
@@ -103,7 +103,7 @@
 
                     <div class="form-control w-full mb-6">
                         <label class="label">
-                            <span class="label-text">Price</span>
+                            <span class="label-text">{{ __('Price') }}</span>
                         </label>
                         <x-currency-input wire-model="price" />
                         {{-- <input 
@@ -123,14 +123,14 @@
                             class="btn"
                         >
                             <x-icon.x />
-                            Cancel
+                            {{ __('Cancel') }}
                         </button>
                         <button 
                             type="submit" 
                             class="btn btn-primary"
                         >
                             <x-icon.check />
-                            Save
+                            {{ __('Save') }}
                         </button>
                     </div>
                 </form>
@@ -143,10 +143,10 @@
 
     <!-- Confirm Delete Dialog -->
     <x-confirm-price-list-delete-dialog 
-        title="Delete Price List"
-        message="Are you sure you want to delete this price list? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
+        :title="__('Delete Price List')"
+        :message="__('Are you sure you want to delete this price list? This action cannot be undone.')"
+        :confirmText="__('Delete')"
+        :cancelText="__('Cancel')"
         isDangerous="true"
         onConfirm="$wire.delete({{ $deleteId ?? 'null' }})"
     />

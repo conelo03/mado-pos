@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Receipt - {{ $sale->invoice_no }}</title>
+    <title>{{ __('Receipt') }} - {{ $sale->invoice_no }}</title>
     <style>
         * {
             margin: 0;
@@ -164,7 +164,7 @@
         <div class="header">
             <div class="store-name">MADO POS</div>
             <div class="invoice-info">
-                <div>Invoice: {{ $sale->invoice_no }}</div>
+                <div>{{ __('Invoice') }}: {{ $sale->invoice_no }}</div>
                 <div>{{ $sale->created_at->format('d/m/Y H:i') }}</div>
             </div>
         </div>
@@ -173,9 +173,9 @@
         
         <div class="items-section">
             <div class="item-header">
-                <span class="item-name">Item</span>
-                <span class="item-qty">Qty</span>
-                <span class="item-price">Total</span>
+                <span class="item-name">{{ __('Item') }}</span>
+                <span class="item-qty">{{ __('Qty') }}</span>
+                <span class="item-price">{{ __('Total') }}</span>
             </div>
             
             @foreach($sale->items as $item)
@@ -195,44 +195,44 @@
         
         <div class="summary-section">
             <div class="summary-row">
-                <span>Subtotal:</span>
+                <span>{{ __('Subtotal') }}:</span>
                 <span>Rp {{ number_format($sale->items->sum('subtotal'), 0, ',', '.') }}</span>
             </div>
             
             @if($sale->discount > 0)
                 <div class="summary-row">
-                    <span>Discount:</span>
+                    <span>{{ __('Discount') }}:</span>
                     <span>-Rp {{ number_format($sale->discount, 0, ',', '.') }}</span>
                 </div>
             @endif
             
             <div class="summary-row total">
-                <span>Total:</span>
+                <span>{{ __('Total') }}:</span>
                 <span>Rp {{ number_format($sale->total_price, 0, ',', '.') }}</span>
             </div>
             
             <div class="summary-row">
-                <span>Paid:</span>
+                <span>{{ __('Paid') }}:</span>
                 <span>Rp {{ number_format($sale->paid_amount, 0, ',', '.') }}</span>
             </div>
             
             @if($sale->change_amount > 0)
                 <div class="summary-row change">
-                    <span>Change:</span>
+                    <span>{{ __('Change') }}:</span>
                     <span>Rp {{ number_format($sale->change_amount, 0, ',', '.') }}</span>
                 </div>
             @endif
         </div>
         
         <div class="footer">
-            <div class="thank-you">Thank You!</div>
+            <div class="thank-you">{{ __('Thank You!') }}</div>
             <div class="date-time">{{ now()->format('d/m/Y H:i:s') }}</div>
         </div>
     </div>
     
     <div class="print-button no-print">
-        <button onclick="window.print()">Print Receipt</button>
-        <button onclick="window.close()" style="margin-left: 10px; background: #666;">Close</button>
+        <button onclick="window.print()">{{ __('Print Receipt') }}</button>
+        <button onclick="window.close()" style="margin-left: 10px; background: #666;">{{ __('Close') }}</button>
     </div>
     
     <script>

@@ -75,7 +75,7 @@ class Index extends Component
             'products' => $products,
             'customers' => $customers,
             'priceListTypes' => $priceListTypes,
-        ])->layout('components.app-layout', ['title' => 'Transactions']);
+        ])->layout('components.app-layout', ['title' => __('Transactions')]);
     }
 
     public function openModal()
@@ -95,12 +95,12 @@ class Index extends Component
         $sale = Sale::with('items', 'refundedBy', 'cancelledBy')->find($id);
         $this->viewingId = $id;
         $this->viewInvoiceNo = $sale->invoice_no;
-        $this->viewDate = $sale->created_at->format('d M Y H:i');
+        $this->viewDate = $sale->created_at->translatedFormat('d M Y H:i');
 
         $isRefund = $sale->status === 'REFUND';
         $this->viewStatus = $sale->status;
         $this->viewStatusBy = ($isRefund ? $sale->refundedBy : $sale->cancelledBy)?->name ?? '-';
-        $this->viewStatusAt = ($isRefund ? $sale->refunded_at : $sale->cancelled_at)?->format('d M Y H:i') ?? '-';
+        $this->viewStatusAt = ($isRefund ? $sale->refunded_at : $sale->cancelled_at)?->translatedFormat('d M Y H:i') ?? '-';
         $this->viewStatusReason = $sale->status_reason ?? '';
 
         $this->viewItems = $sale->items->map(function ($item) {
@@ -282,7 +282,7 @@ class Index extends Component
     public function save()
     {
         if (empty($this->items)) {
-            $this->dispatch('notify', message: 'Please add items to transaction');
+            $this->dispatch('notify', message: __('Please add items to transaction'));
             return;
         }
 
@@ -348,7 +348,7 @@ class Index extends Component
                 $sale->update(['total_cost' => $totalCost]);
 
                 $this->closeModal();
-                $this->dispatch('notify', message: 'Transaction updated successfully');
+                $this->dispatch('notify', message: __('Transaction updated successfully'));
             } else {
                 // Create new transaction
                 $totalCost = 0;
@@ -390,7 +390,7 @@ class Index extends Component
                 }
 
                 $this->closeModal();
-                $this->dispatch('notify', message: 'Transaction saved successfully');
+                $this->dispatch('notify', message: __('Transaction saved successfully'));
             }
         });
     }
@@ -499,7 +499,7 @@ class Index extends Component
         });
 
         $this->deleteId = null;
-        $this->dispatch('notify', message: 'Transaction deleted successfully');
+        $this->dispatch('notify', message: __('Transaction deleted successfully'));
     }
 
     private function restoreItemStock($itemId, $qty, $saleId)
@@ -542,8 +542,8 @@ class Index extends Component
 
         $this->reset(['refundId', 'statusReason']);
         $this->dispatch('notify', message: $refunded
-            ? 'Transaction refunded successfully'
-            : 'Transaction is no longer PAID');
+            ? __('Transaction refunded successfully')
+            : __('Transaction is no longer PAID'));
     }
 
     public function cancel($id)
@@ -588,8 +588,8 @@ class Index extends Component
 
         $this->reset(['cancelId', 'statusReason']);
         $this->dispatch('notify', message: $cancelled
-            ? 'Transaction cancelled successfully'
-            : 'Transaction is no longer PAID');
+            ? __('Transaction cancelled successfully')
+            : __('Transaction is no longer PAID'));
     }
 
     private function authorizeStatusChange()

@@ -69,11 +69,11 @@ class PriceListManager extends Component
             $priceList = ItemPriceList::findOrFail($this->editingId);
             $data['updated_by'] = auth()->id();
             $priceList->update($data);
-            $this->dispatch('notify', message: 'Price list updated successfully');
+            $this->dispatch('notify', message: __('Price list updated successfully'));
         } else {
             $data['created_by'] = auth()->id();
             ItemPriceList::create($data);
-            $this->dispatch('notify', message: 'Price list created successfully');
+            $this->dispatch('notify', message: __('Price list created successfully'));
         }
 
         $this->closeModal();
@@ -88,7 +88,7 @@ class PriceListManager extends Component
     public function delete($id)
     {
         ItemPriceList::findOrFail($id)->delete();
-        $this->dispatch('notify', message: 'Price list deleted successfully');
+        $this->dispatch('notify', message: __('Price list deleted successfully'));
     }
 
     public function render()

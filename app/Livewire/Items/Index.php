@@ -45,7 +45,7 @@ class Index extends Component
 
         return view('livewire.items.index', [
             'items' => $items,
-        ])->layout('components.app-layout', ['title' => 'Items']);
+        ])->layout('components.app-layout', ['title' => __('Items')]);
     }
 
     public function openModal()
@@ -95,7 +95,7 @@ class Index extends Component
         }
 
         $this->closeModal();
-        $this->dispatch('notify', message: 'Item saved successfully');
+        $this->dispatch('notify', message: __('Item saved successfully'));
     }
 
     public function edit($id)
@@ -123,6 +123,6 @@ class Index extends Component
     {
         Item::find($id)->delete();
         $this->deleteId = null;
-        $this->dispatch('notify', message: 'Item deleted successfully');
+        $this->dispatch('notify', message: __('Item deleted successfully'));
     }
 }

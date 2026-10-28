@@ -73,6 +73,6 @@ class ByTransactions extends Component
             'totalCost' => $totalCost,
             'customers' => $customers,
             'priceListTypes' => $priceListTypes,
-        ])->layout('components.app-layout', ['title' => 'Sales Report - By Transactions']);
+        ])->layout('components.app-layout', ['title' => __('Sales Report - By Transactions')]);
     }
 }

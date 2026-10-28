@@ -89,7 +89,7 @@ class Detail extends Component
         }
 
         $this->closeBomModal();
-        $this->dispatch('notify', message: 'BOM saved successfully');
+        $this->dispatch('notify', message: __('BOM saved successfully'));
     }
 
     public function editBom($id)
@@ -110,7 +110,7 @@ class Detail extends Component
     public function deleteBom($id)
     {
         ItemBom::find($id)->delete();
-        $this->dispatch('notify', message: 'BOM deleted successfully');
+        $this->dispatch('notify', message: __('BOM deleted successfully'));
     }
 
     public function resetFilter()

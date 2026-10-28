@@ -2,7 +2,7 @@
     <div class="mb-6 flex flex-col lg:flex-row gap-4 items-end">
         <div class="flex-1">
             <label class="label">
-                <span class="label-text">Start Date</span>
+                <span class="label-text">{{ __('Start Date') }}</span>
             </label>
             <input 
                 type="date" 
@@ -12,7 +12,7 @@
         </div>
         <div class="flex-1">
             <label class="label">
-                <span class="label-text">End Date</span>
+                <span class="label-text">{{ __('End Date') }}</span>
             </label>
             <input 
                 type="date" 
@@ -22,26 +22,26 @@
         </div>
         <div class="flex-1">
             <label class="label">
-                <span class="label-text">Status</span>
+                <span class="label-text">{{ __('Status') }}</span>
             </label>
             <select 
                 wire:model.live="status" 
                 class="select select-bordered w-full"
             >
-                <option value="PAID">PAID</option>
-                <option value="REFUND">REFUND</option>
-                <option value="">All Status</option>
+                <option value="PAID">{{ __('PAID') }}</option>
+                <option value="REFUND">{{ __('REFUND') }}</option>
+                <option value="">{{ __('All Status') }}</option>
             </select>
         </div>
         <div class="flex-1">
             <label class="label">
-                <span class="label-text">Customer</span>
+                <span class="label-text">{{ __('Customer') }}</span>
             </label>
             <select 
                 wire:model.live="customerFilter" 
                 class="select select-bordered w-full"
             >
-                <option value="">All Customers</option>
+                <option value="">{{ __('All Customers') }}</option>
                 @foreach($customers as $customer)
                     <option value="{{ $customer->id }}">{{ $customer->name }}</option>
                 @endforeach
@@ -49,13 +49,13 @@
         </div>
         <div class="flex-1">
             <label class="label">
-                <span class="label-text">Price Type</span>
+                <span class="label-text">{{ __('Price Type') }}</span>
             </label>
             <select 
                 wire:model.live="priceListTypeFilter" 
                 class="select select-bordered w-full"
             >
-                <option value="">All Price Types</option>
+                <option value="">{{ __('All Price Types') }}</option>
                 @foreach($priceListTypes as $priceType)
                     <option value="{{ $priceType->id }}">{{ $priceType->name }}</option>
                 @endforeach
@@ -68,13 +68,13 @@
             <thead>
                 <tr>
                     <th style="width: 50px;">#</th>
-                    <th>Invoice</th>
-                    <th>Date</th>
-                    <th>Customer</th>
-                    <th>Price Type</th>
-                    <th>Status</th>
-                    <th>Total Cost</th>
-                    <th>Total Revenue</th>
+                    <th>{{ __('Invoice') }}</th>
+                    <th>{{ __('Date') }}</th>
+                    <th>{{ __('Customer') }}</th>
+                    <th>{{ __('Price Type') }}</th>
+                    <th>{{ __('Status') }}</th>
+                    <th>{{ __('Total Cost') }}</th>
+                    <th>{{ __('Total Revenue') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -83,11 +83,11 @@
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $sale->invoice_no }}</td>
                         <td>{{ $sale->created_at->format('d/m/Y H:i') }}</td>
-                        <td>{{ $sale->customer?->name ?? 'Walk-in Customer' }}</td>
+                        <td>{{ $sale->customer?->name ?? __('Walk-in Customer') }}</td>
                         <td>{{ $sale->priceListType?->name ?? '-' }}</td>
                         <td>
                             <div class="badge {{ $sale->status === 'PAID' ? 'badge-success' : ($sale->status === 'REFUND' ? 'badge-warning' : 'badge-error') }}">
-                                {{ $sale->status }}
+                                {{ __($sale->status) }}
                             </div>
                         </td>
                         <td>Rp {{ number_format($sale->total_cost, 0, ',', '.') }}</td>
@@ -95,13 +95,13 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="text-center">No data found</td>
+                        <td colspan="8" class="text-center">{{ __('No data found') }}</td>
                     </tr>
                 @endforelse
             </tbody>
             <tfoot>
                 <tr class="font-bold bg-base-200">
-                    <td colspan="6">Total</td>
+                    <td colspan="6">{{ __('Total') }}</td>
                     <td>Rp {{ number_format($totalCost, 0, ',', '.') }}</td>
                     <td>Rp {{ number_format($totalRevenue, 0, ',', '.') }}</td>
                 </tr>

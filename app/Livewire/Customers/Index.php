@@ -77,11 +77,11 @@ class Index extends Component
             $customer = Customer::findOrFail($this->editingId);
             $data['updated_by'] = auth()->id();
             $customer->update($data);
-            $this->dispatch('notify', message: 'Customer updated successfully');
+            $this->dispatch('notify', message: __('Customer updated successfully'));
         } else {
             $data['created_by'] = auth()->id();
             Customer::create($data);
-            $this->dispatch('notify', message: 'Customer created successfully');
+            $this->dispatch('notify', message: __('Customer created successfully'));
         }
 
         $this->closeModal();
@@ -96,7 +96,7 @@ class Index extends Component
     public function delete($id)
     {
         Customer::findOrFail($id)->delete();
-        $this->dispatch('notify', message: 'Customer deleted successfully');
+        $this->dispatch('notify', message: __('Customer deleted successfully'));
     }
 
     public function render()
@@ -115,6 +115,6 @@ class Index extends Component
         return view('livewire.customers.index', [
             'customers' => $customers,
             'priceListTypes' => $priceListTypes,
-        ])->layout('components.app-layout', ['title' => 'Customers']);
+        ])->layout('components.app-layout', ['title' => __('Customers')]);
     }
 }

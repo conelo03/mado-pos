@@ -39,7 +39,7 @@ class StockInput extends Component
         return view('livewire.stock-management.stock-input', [
             'movements' => $movements,
             'items' => $items,
-        ])->layout('components.app-layout', ['title' => 'Stock Input']);
+        ])->layout('components.app-layout', ['title' => __('Stock Input')]);
     }
 
     public function openModal()
@@ -96,7 +96,7 @@ class StockInput extends Component
         }
 
         $this->closeModal();
-        $this->dispatch('notify', message: 'Stock input saved successfully');
+        $this->dispatch('notify', message: __('Stock input saved successfully'));
     }
 
     public function edit($id)
@@ -126,6 +126,6 @@ class StockInput extends Component
 
         $movement->delete();
         $this->deleteId = null;
-        $this->dispatch('notify', message: 'Stock input deleted successfully');
+        $this->dispatch('notify', message: __('Stock input deleted successfully'));
     }
 }

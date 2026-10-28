@@ -62,7 +62,7 @@ class AuthenticatedSessionController extends Controller
         }
 
         return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
+            'email' => __('auth.failed'),
         ])->onlyInput('email');
     }
 

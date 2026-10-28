@@ -28,6 +28,6 @@ class Dashboard extends Component
             'todayRevenue' => $todayRevenue,
             'recentTransactions' => $recentTransactions,
             'lowStockItems' => $lowStockItems,
-        ])->layout('components.app-layout', ['title' => 'Dashboard']);
+        ])->layout('components.app-layout', ['title' => __('Dashboard')]);
     }
 }

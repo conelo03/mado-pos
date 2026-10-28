@@ -67,11 +67,11 @@ class Index extends Component
             $priceListType = PriceListType::findOrFail($this->editingId);
             $data['updated_by'] = auth()->id();
             $priceListType->update($data);
-            $this->dispatch('notify', message: 'Price list type updated successfully');
+            $this->dispatch('notify', message: __('Price list type updated successfully'));
         } else {
             $data['created_by'] = auth()->id();
             PriceListType::create($data);
-            $this->dispatch('notify', message: 'Price list type created successfully');
+            $this->dispatch('notify', message: __('Price list type created successfully'));
         }
 
         $this->closeModal();
@@ -86,7 +86,7 @@ class Index extends Component
     public function delete($id)
     {
         PriceListType::findOrFail($id)->delete();
-        $this->dispatch('notify', message: 'Price list type deleted successfully');
+        $this->dispatch('notify', message: __('Price list type deleted successfully'));
     }
 
     public function render()
@@ -99,6 +99,6 @@ class Index extends Component
         return view('livewire.price-list-types.index', [
             'priceListTypes' => $priceListTypes,
             'types' => PriceListType::getTypes(),
-        ])->layout('components.app-layout', ['title' => 'Price List Types']);
+        ])->layout('components.app-layout', ['title' => __('Price List Types')]);
     }
 }

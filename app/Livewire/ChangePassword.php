@@ -19,12 +19,15 @@ class ChangePassword extends Component
         'newPassword' => 'required|string|min:6|confirmed',
     ];
 
-    protected $messages = [
-        'currentPassword.required' => 'Current password is required',
-        'newPassword.required' => 'New password is required',
-        'newPassword.min' => 'New password must be at least 6 characters',
-        'newPassword.confirmed' => 'Passwords do not match',
-    ];
+    protected function messages()
+    {
+        return [
+            'currentPassword.required' => __('Current password is required'),
+            'newPassword.required' => __('New password is required'),
+            'newPassword.min' => __('New password must be at least 6 characters'),
+            'newPassword.confirmed' => __('Passwords do not match'),
+        ];
+    }
 
     public function changePassword()
     {
@@ -33,18 +36,18 @@ class ChangePassword extends Component
         $user = auth()->user();
 
         if (!Hash::check($this->currentPassword, $user->password)) {
-            $this->addError('currentPassword', 'Current password is incorrect');
+            $this->addError('currentPassword', __('Current password is incorrect'));
             return;
         }
 
         $user->update(['password' => Hash::make($this->newPassword)]);
 
         $this->reset();
-        $this->dispatch('notify', message: 'Password changed successfully');
+        $this->dispatch('notify', message: __('Password changed successfully'));
     }
 
     public function render()
     {
-        return view('livewire.change-password')->layout('components.app-layout', ['title' => 'Change Password']);
+        return view('livewire.change-password')->layout('components.app-layout', ['title' => __('Change Password')]);
     }
 }

@@ -78,7 +78,7 @@ class Index extends Component
             if ($this->password) {
                 $user->update(['password' => Hash::make($this->password)]);
             }
-            $this->dispatch('notify', message: 'User updated successfully');
+            $this->dispatch('notify', message: __('User updated successfully'));
         } else {
             $this->validate();
             User::create([
@@ -87,7 +87,7 @@ class Index extends Component
                 'password' => Hash::make($this->password),
                 'role' => $this->role,
             ]);
-            $this->dispatch('notify', message: 'User created successfully');
+            $this->dispatch('notify', message: __('User created successfully'));
         }
 
         $this->closeModal();
@@ -101,7 +101,7 @@ class Index extends Component
     public function delete($id)
     {
         User::find($id)->delete();
-        $this->dispatch('notify', message: 'User deleted successfully');
+        $this->dispatch('notify', message: __('User deleted successfully'));
     }
 
     public function render()
@@ -110,6 +110,6 @@ class Index extends Component
             ->orWhere('email', 'like', "%{$this->search}%")
             ->paginate(10);
 
-        return view('livewire.users.index', ['users' => $users])->layout('components.app-layout', ['title' => 'Users']);
+        return view('livewire.users.index', ['users' => $users])->layout('components.app-layout', ['title' => __('Users')]);
     }
 }

@@ -39,7 +39,7 @@ class StockOpname extends Component
         return view('livewire.stock-management.stock-opname', [
             'movements' => $movements,
             'items' => $items,
-        ])->layout('components.app-layout', ['title' => 'Stock Opname']);
+        ])->layout('components.app-layout', ['title' => __('Stock Opname')]);
     }
 
     public function openModal()
@@ -97,7 +97,7 @@ class StockOpname extends Component
         }
 
         $this->closeModal();
-        $this->dispatch('notify', message: 'Stock opname saved successfully');
+        $this->dispatch('notify', message: __('Stock opname saved successfully'));
     }
 
     public function edit($id)
@@ -128,6 +128,6 @@ class StockOpname extends Component
 
         $movement->delete();
         $this->deleteId = null;
-        $this->dispatch('notify', message: 'Stock opname deleted successfully');
+        $this->dispatch('notify', message: __('Stock opname deleted successfully'));
     }
 }

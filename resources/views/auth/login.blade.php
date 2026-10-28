@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,7 +17,7 @@
 
                     <div class="form-control w-full mb-4">
                         <label class="label">
-                            <span class="label-text">Email</span>
+                            <span class="label-text">{{ __('Email') }}</span>
                         </label>
                         <input 
                             type="email" 
@@ -36,7 +36,7 @@
 
                     <div class="form-control w-full mb-6">
                         <label class="label">
-                            <span class="label-text">Password</span>
+                            <span class="label-text">{{ __('Password') }}</span>
                         </label>
                         <input 
                             type="password" 
@@ -56,7 +56,7 @@
                         type="submit" 
                         class="btn btn-primary w-full"
                     >
-                        Login
+                        {{ __('Login') }}
                     </button>
                 </form>
             </div>

@@ -1,4 +1,4 @@
-@props(['title' => 'Confirm', 'message' => 'Are you sure?', 'confirmText' => 'Refund', 'cancelText' => 'Cancel', 'onConfirm' => ''])
+@props(['title' => __('Confirm'), 'message' => __('Are you sure?'), 'confirmText' => __('Refund'), 'cancelText' => __('Cancel'), 'onConfirm' => ''])
 
 <div 
     x-data="{ open: false }"

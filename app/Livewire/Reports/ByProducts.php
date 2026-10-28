@@ -58,6 +58,6 @@ class ByProducts extends Component
             'totalSubtotal' => $totalSubtotal,
             'totalCostSubtotal' => $totalCostSubtotal,
             'products' => $products,
-        ])->layout('components.app-layout', ['title' => 'Sales Report - By Products']);
+        ])->layout('components.app-layout', ['title' => __('Sales Report - By Products')]);
     }
 }

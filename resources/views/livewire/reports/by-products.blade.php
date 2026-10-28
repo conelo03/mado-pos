@@ -2,7 +2,7 @@
     <div class="mb-6 flex flex-col lg:flex-row gap-4 items-end">
         <div class="flex-1">
             <label class="label">
-                <span class="label-text">Start Date</span>
+                <span class="label-text">{{ __('Start Date') }}</span>
             </label>
             <input 
                 type="date" 
@@ -12,7 +12,7 @@
         </div>
         <div class="flex-1">
             <label class="label">
-                <span class="label-text">End Date</span>
+                <span class="label-text">{{ __('End Date') }}</span>
             </label>
             <input 
                 type="date" 
@@ -22,13 +22,13 @@
         </div>
         <div class="flex-1">
             <label class="label">
-                <span class="label-text">Product</span>
+                <span class="label-text">{{ __('Product') }}</span>
             </label>
             <select 
                 wire:model.live="productId" 
                 class="select select-bordered w-full"
             >
-                <option value="">All Products</option>
+                <option value="">{{ __('All Products') }}</option>
                 @foreach($products as $product)
                     <option value="{{ $product->id }}">{{ $product->name }}</option>
                 @endforeach
@@ -41,10 +41,10 @@
             <thead>
                 <tr>
                     <th style="width: 50px;">#</th>
-                    <th>Product Name</th>
-                    <th>Qty</th>
-                    <th>Cost Subtotal</th>
-                    <th>Subtotal</th>
+                    <th>{{ __('Product Name') }}</th>
+                    <th>{{ __('Qty') }}</th>
+                    <th>{{ __('Cost Subtotal') }}</th>
+                    <th>{{ __('Subtotal') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -58,14 +58,14 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="text-center">No data found</td>
+                        <td colspan="5" class="text-center">{{ __('No data found') }}</td>
                     </tr>
                 @endforelse
             </tbody>
             @if($report->count() > 0)
                 <tfoot>
                     <tr class="font-bold bg-base-200">
-                        <td colspan="2">Total</td>
+                        <td colspan="2">{{ __('Total') }}</td>
                         <td>{{ $totalQty }}</td>
                         <td>Rp {{ number_format($totalCostSubtotal, 0, ',', '.') }}</td>
                         <td>Rp {{ number_format($totalSubtotal, 0, ',', '.') }}</td>

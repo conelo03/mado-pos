@@ -3,7 +3,7 @@
         <input 
             type="text" 
             wire:model.live="search" 
-            placeholder="Search item..." 
+            placeholder="{{ __('Search item...') }}" 
             class="input input-bordered w-full lg:w-64"
         >
         <button 
@@ -11,7 +11,7 @@
             class="btn btn-primary w-full lg:w-auto"
         >
             <x-icon.plus />
-            Add Stock Opname
+            {{ __('Add Stock Opname') }}
         </button>
     </div>
 
@@ -20,12 +20,12 @@
             <thead>
                 <tr>
                     <th style="width: 50px;">#</th>
-                    <th>Item</th>
-                    <th>Qty</th>
-                    <th>Type</th>
-                    <th>Date</th>
-                    <th>Note</th>
-                    <th style="width: 100px;">Actions</th>
+                    <th>{{ __('Item') }}</th>
+                    <th>{{ __('Qty') }}</th>
+                    <th>{{ __('Type') }}</th>
+                    <th>{{ __('Date') }}</th>
+                    <th>{{ __('Note') }}</th>
+                    <th style="width: 100px;">{{ __('Actions') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -41,22 +41,22 @@
                         </td>
                         <td>
                             <div class="badge {{ $movement->reference_type === 'ADJUSTMENT' ? 'badge-success' : 'badge-warning' }}">
-                                {{ $movement->reference_type }}
+                                {{ __($movement->reference_type) }}
                             </div>
                         </td>
-                        <td>{{ $movement->date->format('d M Y') }}</td>
+                        <td>{{ $movement->date->translatedFormat('d M Y') }}</td>
                         <td>{{ $movement->note ?? '-' }}</td>
                         <td>
                             <div class="flex gap-1">
                                 <button 
                                     wire:click="edit({{ $movement->id }})" 
-                                    class="btn btn-xs btn-warning" title="Edit"
+                                    class="btn btn-xs btn-warning" title="{{ __('Edit') }}"
                                 >
                                     <x-icon.pencil />
                                 </button>
                                 <button 
                                     wire:click="confirmDelete({{ $movement->id }})" 
-                                    class="btn btn-xs btn-error" title="Delete"
+                                    class="btn btn-xs btn-error" title="{{ __('Delete') }}"
                                 >
                                     <x-icon.trash />
                                 </button>
@@ -65,7 +65,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="text-center">No stock opnames found</td>
+                        <td colspan="7" class="text-center">{{ __('No stock opnames found') }}</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -80,12 +80,12 @@
     @if($showModal)
         <div class="modal modal-open">
             <div class="modal-box overflow-visible">
-                <h3 class="font-bold text-lg mb-4">{{ $editingId ? 'Edit' : 'Add' }} Stock Opname</h3>
+                <h3 class="font-bold text-lg mb-4">{{ $editingId ? __('Edit Stock Opname') : __('Add Stock Opname') }}</h3>
                 
                 <form wire:submit="save">
                     <div class="form-control w-full mb-4">
                         <label class="label">
-                            <span class="label-text">Item</span>
+                            <span class="label-text">{{ __('Item') }}</span>
                         </label>
                         <div
                             x-data="{
@@ -118,7 +118,7 @@
                                 @click="open = !open"
                                 class="select select-bordered w-full text-left flex items-center justify-between"
                             >
-                                <span x-text="selectedLabel || 'Select item...'" :class="selectedLabel ? '' : 'opacity-50'"></span>
+                                <span x-text="selectedLabel || {{ Js::from(__('Select item...')) }}" :class="selectedLabel ? '' : 'opacity-50'"></span>
                                 <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                             </button>
 
@@ -134,14 +134,14 @@
                                         x-model="search"
                                         x-ref="searchInput"
                                         @click.stop
-                                        placeholder="Search..."
+                                        placeholder="{{ __('Search...') }}"
                                         class="input input-sm input-bordered w-full"
                                         x-init="$watch('open', val => val && $nextTick(() => $refs.searchInput.focus()))"
                                     >
                                 </div>
                                 <ul class="max-h-48 overflow-y-auto py-1">
                                     <template x-if="filtered.length === 0">
-                                        <li class="px-3 py-2 text-sm opacity-50">No items found</li>
+                                        <li class="px-3 py-2 text-sm opacity-50">{{ __('No items found') }}</li>
                                     </template>
                                     <template x-for="item in filtered" :key="item.id">
                                         <li
@@ -158,7 +158,7 @@
 
                     <div class="form-control w-full mb-4">
                         <label class="label">
-                            <span class="label-text">Quantity (negative for waste)</span>
+                            <span class="label-text">{{ __('Quantity (negative for waste)') }}</span>
                         </label>
                         <input 
                             type="number" 
@@ -171,7 +171,7 @@
 
                     <div class="form-control w-full mb-4">
                         <label class="label">
-                            <span class="label-text">Date</span>
+                            <span class="label-text">{{ __('Date') }}</span>
                         </label>
                         <input 
                             type="date" 
@@ -183,7 +183,7 @@
 
                     <div class="form-control w-full mb-4">
                         <label class="label">
-                            <span class="label-text">Note</span>
+                            <span class="label-text">{{ __('Note') }}</span>
                         </label>
                         <textarea 
                             wire:model="note" 
@@ -196,11 +196,11 @@
                     <div class="modal-action">
                         <button type="button" wire:click="closeModal" class="btn">
                             <x-icon.x />
-                            Cancel
+                            {{ __('Cancel') }}
                         </button>
                         <button type="submit" class="btn btn-primary">
                             <x-icon.check />
-                            Save
+                            {{ __('Save') }}
                         </button>
                     </div>
                 </form>
@@ -213,10 +213,10 @@
 
     <!-- Confirm Delete Dialog -->
     <x-confirm-dialog 
-        title="Delete Stock Opname"
-        message="Are you sure you want to delete this stock opname? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
+        :title="__('Delete Stock Opname')"
+        :message="__('Are you sure you want to delete this stock opname? This action cannot be undone.')"
+        :confirmText="__('Delete')"
+        :cancelText="__('Cancel')"
         isDangerous="true"
         onConfirm="$wire.delete({{ $deleteId ?? 'null' }})"
     />

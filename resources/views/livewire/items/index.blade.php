@@ -4,16 +4,16 @@
             <input 
                 type="text" 
                 wire:model.live="search" 
-                placeholder="Search items..." 
+                placeholder="{{ __('Search items...') }}" 
                 class="input input-bordered flex-1 lg:flex-none lg:w-64"
             >
             <select 
                 wire:model.live="typeFilter"
                 class="select select-bordered"
             >
-                <option value="">All Types</option>
-                <option value="PRODUCT">Product</option>
-                <option value="RAW_MATERIAL">Raw Material</option>
+                <option value="">{{ __('All Types') }}</option>
+                <option value="PRODUCT">{{ __('Product') }}</option>
+                <option value="RAW_MATERIAL">{{ __('Raw Material') }}</option>
             </select>
         </div>
         <button 
@@ -21,7 +21,7 @@
             class="btn btn-primary w-full lg:w-auto"
         >
             <x-icon.plus />
-            Add Item
+            {{ __('Add Item') }}
         </button>
     </div>
 
@@ -30,16 +30,16 @@
             <thead>
                 <tr>
                     <th style="width: 50px;">#</th>
-                    <th>Name</th>
-                    <th>Type</th>
-                    <th>Unit</th>
-                    <th>Cost Price / HPP</th>
-                    <th>Price</th>
-                    <th>Stock</th>
-                    <th>Min Stock</th>
-                    <th>Track Stock</th>
-                    <th>Status</th>
-                    <th style="width: 120px;">Actions</th>
+                    <th>{{ __('Name') }}</th>
+                    <th>{{ __('Type') }}</th>
+                    <th>{{ __('Unit') }}</th>
+                    <th>{{ __('Cost Price / HPP') }}</th>
+                    <th>{{ __('Price') }}</th>
+                    <th>{{ __('Stock') }}</th>
+                    <th>{{ __('Min Stock') }}</th>
+                    <th>{{ __('Track Stock') }}</th>
+                    <th>{{ __('Status') }}</th>
+                    <th style="width: 120px;">{{ __('Actions') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -49,7 +49,7 @@
                         <td>{{ $item->name }}</td>
                         <td>
                             <span class="badge {{ $item->type === 'PRODUCT' ? 'badge-info' : 'badge-warning' }}">
-                                {{ $item->type === 'PRODUCT' ? 'Product' : 'Raw Material' }}
+                                {{ $item->type === 'PRODUCT' ? __('Product') : __('Raw Material') }}
                             </span>
                         </td>
                         <td>{{ $item->unit }}</td>
@@ -58,28 +58,28 @@
                         <td>{{ number_format($item->stock, 2, ',', '.') }}</td>
                         <td>{{ number_format($item->minimum_stock, 2, ',', '.') }}</td><td>
                             <div class="badge {{ $item->is_track_stock ? 'badge-success' : 'badge-error' }}">
-                                {{ $item->is_track_stock ? 'Active' : 'Inactive' }}
+                                {{ $item->is_track_stock ? __('Active') : __('Inactive') }}
                             </div>
                         </td>
                         <td>
                             <div class="badge {{ $item->is_active ? 'badge-success' : 'badge-error' }}">
-                                {{ $item->is_active ? 'Active' : 'Inactive' }}
+                                {{ $item->is_active ? __('Active') : __('Inactive') }}
                             </div>
                         </td>
                         <td>
                             <div class="flex gap-1">
-                                <a href="{{ route('items.detail', $item->id) }}" class="btn btn-xs btn-info" title="Detail">
+                                <a href="{{ route('items.detail', $item->id) }}" class="btn btn-xs btn-info" title="{{ __('Detail') }}">
                                     <x-icon.eye />
                                 </a>
                                 <button 
                                     wire:click="edit({{ $item->id }})" 
-                                    class="btn btn-xs btn-warning" title="Edit"
+                                    class="btn btn-xs btn-warning" title="{{ __('Edit') }}"
                                 >
                                     <x-icon.pencil />
                                 </button>
                                 <button 
                                     wire:click="confirmDelete({{ $item->id }})" 
-                                    class="btn btn-xs btn-error" title="Delete"
+                                    class="btn btn-xs btn-error" title="{{ __('Delete') }}"
                                 >
                                     <x-icon.trash />
                                 </button>
@@ -88,7 +88,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="10" class="text-center">No items found</td>
+                        <td colspan="10" class="text-center">{{ __('No items found') }}</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -103,12 +103,12 @@
     @if($showModal)
         <div class="modal modal-open">
             <div class="modal-box">
-                <h3 class="font-bold text-lg mb-4">{{ $editingId ? 'Edit' : 'Add' }} Item</h3>
+                <h3 class="font-bold text-lg mb-4">{{ $editingId ? __('Edit Item') : __('Add Item') }}</h3>
                 
                 <form wire:submit="save">
                     <div class="form-control w-full mb-4">
                         <label class="label">
-                            <span class="label-text">Name</span>
+                            <span class="label-text">{{ __('Name') }}</span>
                         </label>
                         <input 
                             type="text" 
@@ -120,31 +120,31 @@
 
                     <div class="form-control w-full mb-4">
                         <label class="label">
-                            <span class="label-text">Type</span>
+                            <span class="label-text">{{ __('Type') }}</span>
                         </label>
                         <select wire:model="type" class="select select-bordered w-full">
-                            <option value="PRODUCT">Product</option>
-                            <option value="RAW_MATERIAL">Raw Material</option>
+                            <option value="PRODUCT">{{ __('Product') }}</option>
+                            <option value="RAW_MATERIAL">{{ __('Raw Material') }}</option>
                         </select>
                         @error('type') <span class="text-error text-sm">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="form-control w-full mb-4">
                         <label class="label">
-                            <span class="label-text">Unit</span>
+                            <span class="label-text">{{ __('Unit') }}</span>
                         </label>
                         <input 
                             type="text" 
                             wire:model="unit" 
                             class="input input-bordered w-full"
-                            placeholder="e.g., pcs, kg, liter"
+                            placeholder="{{ __('e.g., pcs, kg, liter') }}"
                         >
                         @error('unit') <span class="text-error text-sm">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="form-control w-full mb-4">
                         <label class="label">
-                            <span class="label-text">Cost Price / HPP</span>
+                            <span class="label-text">{{ __('Cost Price / HPP') }}</span>
                         </label>
                         <x-currency-input wire-model="cost" />
                         @error('cost') <span class="text-error text-sm">{{ $message }}</span> @enderror
@@ -152,7 +152,7 @@
 
                     <div class="form-control w-full mb-4">
                         <label class="label">
-                            <span class="label-text">Price</span>
+                            <span class="label-text">{{ __('Price') }}</span>
                         </label>
                         <x-currency-input wire-model="price" />
                         @error('price') <span class="text-error text-sm">{{ $message }}</span> @enderror
@@ -160,7 +160,7 @@
 
                     <div class="form-control w-full mb-4">
                         <label class="label">
-                            <span class="label-text">Minimum Stock</span>
+                            <span class="label-text">{{ __('Minimum Stock') }}</span>
                         </label>
                         <input 
                             type="number" 
@@ -173,7 +173,7 @@
 
                     <div class="form-control w-full mb-4">
                         <label class="label cursor-pointer">
-                            <span class="label-text">Active</span>
+                            <span class="label-text">{{ __('Active') }}</span>
                             <input 
                                 type="checkbox" 
                                 wire:model="is_active" 
@@ -184,7 +184,7 @@
 
                     <div class="form-control w-full mb-4">
                         <label class="label cursor-pointer">
-                            <span class="label-text">Track Stock</span>
+                            <span class="label-text">{{ __('Track Stock') }}</span>
                             <input 
                                 type="checkbox" 
                                 wire:model="is_track_stock" 
@@ -194,8 +194,8 @@
                     </div>
 
                     <div class="modal-action">
-                        <button type="button" wire:click="closeModal" class="btn">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="button" wire:click="closeModal" class="btn">{{ __('Cancel') }}</button>
+                        <button type="submit" class="btn btn-primary">{{ __('Save') }}</button>
                     </div>
                 </form>
             </div>
@@ -203,10 +203,10 @@
     @endif
 
     <x-confirm-dialog 
-        title="Delete Item"
-        message="Are you sure you want to delete this item? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
+        :title="__('Delete Item')"
+        :message="__('Are you sure you want to delete this item? This action cannot be undone.')"
+        :confirmText="__('Delete')"
+        :cancelText="__('Cancel')"
         isDangerous="true"
         onConfirm="$wire.delete({{ $deleteId ?? 'null' }})"
     />

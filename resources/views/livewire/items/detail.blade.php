@@ -2,7 +2,7 @@
     <div class="mb-6">
         <a href="{{ route('items.index') }}" class="btn btn-ghost btn-sm">
             <x-icon.arrow-left />
-            Back
+            {{ __('Back') }}
         </a>
     </div>
 
@@ -10,39 +10,39 @@
         <div class="card bg-base-100 shadow-md">
             <div class="card-body">
                 <h2 class="card-title">{{ $item->name }}</h2>
-                <p class="text-sm text-base-content/60">{{ $item->type === 'PRODUCT' ? 'Product' : 'Raw Material' }}</p>
+                <p class="text-sm text-base-content/60">{{ $item->type === 'PRODUCT' ? __('Product') : __('Raw Material') }}</p>
                 <div class="divider my-2"></div>
                 <div class="space-y-2">
                     <div class="flex justify-between">
-                        <span>Unit:</span>
+                        <span>{{ __('Unit') }}:</span>
                         <span class="font-semibold">{{ $item->unit }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span>Cost Price / HPP:</span>
+                        <span>{{ __('Cost Price / HPP') }}:</span>
                         <span class="font-semibold">Rp {{ number_format($item->cost, 0, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span>Price:</span>
+                        <span>{{ __('Price') }}:</span>
                         <span class="font-semibold">Rp {{ number_format($item->price, 0, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span>Stock:</span>
+                        <span>{{ __('Stock') }}:</span>
                         <span class="font-semibold">{{ number_format($item->stock, 2, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span>Min Stock:</span>
+                        <span>{{ __('Min Stock') }}:</span>
                         <span class="font-semibold">{{ number_format($item->minimum_stock, 2, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span>Track Stock:</span>
+                        <span>{{ __('Track Stock') }}:</span>
                         <span class="badge {{ $item->is_track_stock ? 'badge-success' : 'badge-error' }}">
-                            {{ $item->is_track_stock ? 'Active' : 'Inactive' }}
+                            {{ $item->is_track_stock ? __('Active') : __('Inactive') }}
                         </span>
                     </div>
                     <div class="flex justify-between">
-                        <span>Status:</span>
+                        <span>{{ __('Status') }}:</span>
                         <span class="badge {{ $item->is_active ? 'badge-success' : 'badge-error' }}">
-                            {{ $item->is_active ? 'Active' : 'Inactive' }}
+                            {{ $item->is_active ? __('Active') : __('Inactive') }}
                         </span>
                     </div>
                 </div>
@@ -61,13 +61,13 @@
         <div class="card bg-base-100 shadow-md mb-6">
             <div class="card-body">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="card-title">Bill of Materials (BOM)</h3>
+                    <h3 class="card-title">{{ __('Bill of Materials (BOM)') }}</h3>
                     <button 
                         wire:click="openBomModal" 
                         class="btn btn-sm btn-primary"
                     >
                         <x-icon.plus />
-                        Add BOM
+                        {{ __('Add BOM') }}
                     </button>
                 </div>
 
@@ -75,10 +75,10 @@
                     <table class="table table-sm w-full">
                         <thead>
                             <tr>
-                                <th>Material</th>
-                                <th>Qty</th>
-                                <th>Unit</th>
-                                <th style="width: 80px;">Actions</th>
+                                <th>{{ __('Material') }}</th>
+                                <th>{{ __('Qty') }}</th>
+                                <th>{{ __('Unit') }}</th>
+                                <th style="width: 80px;">{{ __('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -106,7 +106,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-center">No BOM items</td>
+                                    <td colspan="4" class="text-center">{{ __('No BOM items') }}</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -119,15 +119,15 @@
         @if($showBomModal)
             <div class="modal modal-open">
                 <div class="modal-box">
-                    <h3 class="font-bold text-lg mb-4">{{ $editingBomId ? 'Edit' : 'Add' }} BOM</h3>
+                    <h3 class="font-bold text-lg mb-4">{{ $editingBomId ? __('Edit BOM') : __('Add BOM') }}</h3>
                     
                     <form wire:submit="saveBom">
                         <div class="form-control w-full mb-4">
                             <label class="label">
-                                <span class="label-text">Material</span>
+                                <span class="label-text">{{ __('Material') }}</span>
                             </label>
                             <select wire:model="material_id" class="select select-bordered w-full">
-                                <option value="">Select Material</option>
+                                <option value="">{{ __('Select Material') }}</option>
                                 @foreach(\App\Models\Item::where('type', 'RAW_MATERIAL')->where('is_active', true)->get() as $material)
                                     <option value="{{ $material->id }}">{{ $material->name }}</option>
                                 @endforeach
@@ -137,7 +137,7 @@
 
                         <div class="form-control w-full mb-4">
                             <label class="label">
-                                <span class="label-text">Quantity</span>
+                                <span class="label-text">{{ __('Quantity') }}</span>
                             </label>
                             <input 
                                 type="number" 
@@ -149,8 +149,8 @@
                         </div>
 
                         <div class="modal-action">
-                            <button type="button" wire:click="closeBomModal" class="btn">Cancel</button>
-                            <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="button" wire:click="closeBomModal" class="btn">{{ __('Cancel') }}</button>
+                            <button type="submit" class="btn btn-primary">{{ __('Save') }}</button>
                         </div>
                     </form>
                 </div>
@@ -159,10 +159,10 @@
 
         <!-- Confirm Dialog for BOM Delete -->
         <x-confirm-dialog 
-            title="Delete BOM"
-            message="Are you sure you want to delete this BOM item? This action cannot be undone."
-            confirmText="Delete"
-            cancelText="Cancel"
+            :title="__('Delete BOM')"
+            :message="__('Are you sure you want to delete this BOM item? This action cannot be undone.')"
+            :confirmText="__('Delete')"
+            :cancelText="__('Cancel')"
             isDangerous="true"
             onConfirm="$wire.deleteBom({{ $deletingBomId ?? 'null' }})"
         />
@@ -171,13 +171,13 @@
     <!-- Stock Movements Section -->
     <div class="card bg-base-100 shadow-md">
         <div class="card-body">
-            <h3 class="card-title">Stock Movements</h3>
+            <h3 class="card-title">{{ __('Stock Movements') }}</h3>
 
             <!-- Filter -->
             <div class="mb-4 flex flex-col lg:flex-row gap-4 items-end">
                 <div class="form-control w-full lg:w-auto">
                     <label class="label">
-                        <span class="label-text">From Date</span>
+                        <span class="label-text">{{ __('From Date') }}</span>
                     </label>
                     <input 
                         type="date" 
@@ -187,7 +187,7 @@
                 </div>
                 <div class="form-control w-full lg:w-auto">
                     <label class="label">
-                        <span class="label-text">To Date</span>
+                        <span class="label-text">{{ __('To Date') }}</span>
                     </label>
                     <input 
                         type="date" 
@@ -200,7 +200,7 @@
                     class="btn btn-outline"
                 >
                     <x-icon.arrow-path />
-                    Reset
+                    {{ __('Reset') }}
                 </button>
             </div>
 
@@ -210,21 +210,21 @@
                     <thead>
                         <tr>
                             <th style="width: 50px;">#</th>
-                            <th>Date</th>
-                            <th>Type</th>
-                            <th>Qty</th>
-                            <th>Reference</th>
-                            <th>Created By</th>
+                            <th>{{ __('Date') }}</th>
+                            <th>{{ __('Type') }}</th>
+                            <th>{{ __('Qty') }}</th>
+                            <th>{{ __('Reference') }}</th>
+                            <th>{{ __('Created By') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($movements as $movement)
                             <tr class="hover:bg-base-300">
                                 <td>{{ $loop->iteration }}</td>
-                                <td>{{ $movement->created_at->format('d M Y H:i') }}</td>
+                                <td>{{ $movement->created_at->translatedFormat('d M Y H:i') }}</td>
                                 <td>
                                     <div class="badge {{ $movement->type === 'PURCHASE' ? 'badge-info' : ($movement->type === 'SALE' ? 'badge-error' : ($movement->type === 'ADJUSTMENT' ? 'badge-success' : 'badge-warning')) }}">
-                                        {{ $movement->type }}
+                                        {{ __($movement->type) }}
                                     </div>
                                 </td>
                                 <td>
@@ -234,20 +234,20 @@
                                 </td>
                                 <td>
                                     @if($movement->reference_type === 'SALE')
-                                        Sale #{{ $movement->reference_id }}
+                                        {{ __('Sale #:id', ['id' => $movement->reference_id]) }}
                                     @elseif($movement->reference_type === 'SALE_CANCEL')
-                                        Cancel Sale #{{ $movement->reference_id }}
+                                        {{ __('Cancel Sale #:id', ['id' => $movement->reference_id]) }}
                                     @elseif($movement->reference_type === 'PURCHASE')
-                                        Stock Input
+                                        {{ __('Stock Input') }}
                                     @else
-                                        Stock Opname
+                                        {{ __('Stock Opname') }}
                                     @endif
                                 </td>
-                                <td>{{ $movement->createdBy?->name ?? 'System' }}</td>
+                                <td>{{ $movement->createdBy?->name ?? __('System') }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center">No movements found</td>
+                                <td colspan="6" class="text-center">{{ __('No movements found') }}</td>
                             </tr>
                         @endforelse
                     </tbody>

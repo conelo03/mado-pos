@@ -3,7 +3,7 @@
         <input 
             type="text" 
             wire:model.live="search" 
-            placeholder="Search users..." 
+            placeholder="{{ __('Search users...') }}" 
             class="input input-bordered w-full lg:w-64"
         >
         <button 
@@ -11,7 +11,7 @@
             class="btn btn-primary w-full lg:w-auto"
         >
             <x-icon.plus />
-            Add User
+            {{ __('Add User') }}
         </button>
     </div>
 
@@ -20,10 +20,10 @@
             <thead>
                 <tr>
                     <th style="width: 50px;">#</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th style="width: 100px;">Actions</th>
+                    <th>{{ __('Name') }}</th>
+                    <th>{{ __('Email') }}</th>
+                    <th>{{ __('Role') }}</th>
+                    <th style="width: 100px;">{{ __('Actions') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -34,20 +34,20 @@
                         <td>{{ $user->email }}</td>
                         <td>
                             <div class="badge {{ $user->role === 'SUPERADMIN' ? 'badge-error' : ($user->role === 'ADMIN' ? 'badge-primary' : 'badge-secondary') }}">
-                                {{ $user->role }}
+                                {{ __($user->role) }}
                             </div>
                         </td>
                         <td>
                             <div class="flex gap-1">
                                 <button 
                                     wire:click="edit({{ $user->id }})" 
-                                    class="btn btn-xs btn-warning" title="Edit"
+                                    class="btn btn-xs btn-warning" title="{{ __('Edit') }}"
                                 >
                                     <x-icon.pencil />
                                 </button>
                                 <button 
                                     wire:click="confirmDelete({{ $user->id }})" 
-                                    class="btn btn-xs btn-error" title="Delete"
+                                    class="btn btn-xs btn-error" title="{{ __('Delete') }}"
                                 >
                                     <x-icon.trash />
                                 </button>
@@ -56,7 +56,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="text-center">No users found</td>
+                        <td colspan="5" class="text-center">{{ __('No users found') }}</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -71,12 +71,12 @@
     @if($showModal)
         <div class="modal modal-open">
             <div class="modal-box">
-                <h3 class="font-bold text-lg mb-4">{{ $editingId ? 'Edit' : 'Add' }} User</h3>
+                <h3 class="font-bold text-lg mb-4">{{ $editingId ? __('Edit User') : __('Add User') }}</h3>
                 
                 <form wire:submit="save">
                     <div class="form-control w-full mb-4">
                         <label class="label">
-                            <span class="label-text">Name</span>
+                            <span class="label-text">{{ __('Name') }}</span>
                         </label>
                         <input 
                             type="text" 
@@ -88,7 +88,7 @@
 
                     <div class="form-control w-full mb-4">
                         <label class="label">
-                            <span class="label-text">Email</span>
+                            <span class="label-text">{{ __('Email') }}</span>
                         </label>
                         <input 
                             type="email" 
@@ -100,7 +100,7 @@
 
                     <div class="form-control w-full mb-4">
                         <label class="label">
-                            <span class="label-text">{{ $editingId ? 'Password (leave blank to keep current)' : 'Password' }}</span>
+                            <span class="label-text">{{ $editingId ? __('Password (leave blank to keep current)') : __('Password') }}</span>
                         </label>
                         <input 
                             type="password" 
@@ -112,13 +112,13 @@
 
                     <div class="form-control w-full mb-6">
                         <label class="label">
-                            <span class="label-text">Role</span>
+                            <span class="label-text">{{ __('Role') }}</span>
                         </label>
                         <select 
                             wire:model="role" 
                             class="select select-bordered w-full"
                         >
-                            <option value="CASHIER">CASHIER</option>
+                            <option value="CASHIER">{{ __('CASHIER') }}</option>
                             <option value="ADMIN">ADMIN</option>
                             <option value="SUPERADMIN">SUPERADMIN</option>
                         </select>
@@ -132,14 +132,14 @@
                             class="btn"
                         >
                             <x-icon.x />
-                            Cancel
+                            {{ __('Cancel') }}
                         </button>
                         <button 
                             type="submit" 
                             class="btn btn-primary"
                         >
                             <x-icon.check />
-                            Save
+                            {{ __('Save') }}
                         </button>
                     </div>
                 </form>
@@ -152,10 +152,10 @@
 
     <!-- Confirm Delete Dialog -->
     <x-confirm-dialog 
-        title="Delete User"
-        message="Are you sure you want to delete this user? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
+        :title="__('Delete User')"
+        :message="__('Are you sure you want to delete this user? This action cannot be undone.')"
+        :confirmText="__('Delete')"
+        :cancelText="__('Cancel')"
         isDangerous="true"
         onConfirm="$wire.delete({{ $deleteId ?? 'null' }})"
     />

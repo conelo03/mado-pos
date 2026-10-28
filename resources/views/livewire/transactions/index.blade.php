@@ -4,17 +4,17 @@
             <input 
                 type="text" 
                 wire:model.live="search" 
-                placeholder="Search invoice..." 
+                placeholder="{{ __('Search invoice...') }}" 
                 class="input input-bordered flex-1 lg:flex-none lg:w-64"
             >
             <select 
                 wire:model.live="statusFilter"
                 class="select select-bordered"
             >
-                <option value="">All Status</option>
-                <option value="PAID">PAID</option>
-                <option value="REFUND">REFUND</option>
-                <option value="VOID">VOID</option>
+                <option value="">{{ __('All Status') }}</option>
+                <option value="PAID">{{ __('PAID') }}</option>
+                <option value="REFUND">{{ __('REFUND') }}</option>
+                <option value="VOID">{{ __('VOID') }}</option>
             </select>
         </div>
         <button 
@@ -22,7 +22,7 @@
             class="btn btn-primary w-full lg:w-auto"
         >
             <x-icon.plus />
-            New Transaction
+            {{ __('New Transaction') }}
         </button>
     </div>
 
@@ -31,11 +31,11 @@
             <thead>
                 <tr>
                     <th style="width: 50px;">#</th>
-                    <th>Invoice</th>
-                    <th>Date</th>
-                    <th>Total</th>
-                    <th>Status</th>
-                    <th style="width: 100px;">Actions</th>
+                    <th>{{ __('Invoice') }}</th>
+                    <th>{{ __('Date') }}</th>
+                    <th>{{ __('Total') }}</th>
+                    <th>{{ __('Status') }}</th>
+                    <th style="width: 100px;">{{ __('Actions') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -43,43 +43,43 @@
                     <tr class="hover:bg-base-300">
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $sale->invoice_no }}</td>
-                        <td>{{ $sale->created_at->format('d M Y H:i') }}</td>
+                        <td>{{ $sale->created_at->translatedFormat('d M Y H:i') }}</td>
                         <td>Rp {{ number_format($sale->total_price, 0, ',', '.') }}</td>
                         <td>
                             <div class="badge {{ $sale->status === 'PAID' ? 'badge-success' : ($sale->status === 'VOID' ? 'badge-error' : 'badge-warning') }}">
-                                {{ $sale->status }}
+                                {{ __($sale->status) }}
                             </div>
                         </td>
                         <td>
                             <div class="flex gap-1">
                                 <button 
                                     onclick="window.open('{{ route('transactions.print', $sale->id) }}', '_blank')" 
-                                    class="btn btn-xs btn-light" title="Print"
+                                    class="btn btn-xs btn-light" title="{{ __('Print') }}"
                                 >
                                     <x-icon.printer />
                                 </button>
                                 <button 
                                     wire:click="openViewModal({{ $sale->id }})" 
-                                    class="btn btn-xs btn-info" title="View"
+                                    class="btn btn-xs btn-info" title="{{ __('View') }}"
                                 >
                                     <x-icon.eye />
                                 </button>
                                 {{-- <button 
                                     wire:click="edit({{ $sale->id }})" 
-                                    class="btn btn-xs btn-warning" title="Edit"
+                                    class="btn btn-xs btn-warning" title="{{ __('Edit') }}"
                                 >
                                     <x-icon.pencil />
                                 </button> --}}
                                 @if($sale->status === 'PAID' && (auth()->user()->role === 'ADMIN' || auth()->user()->role === 'SUPERADMIN'))
                                     <button
                                         wire:click="confirmRefund({{ $sale->id }})"
-                                        class="btn btn-xs btn-warning" title="Refund"
+                                        class="btn btn-xs btn-warning" title="{{ __('Refund') }}"
                                     >
                                         <x-icon.arrow-uturn-left />
                                     </button>
                                     <button 
                                         wire:click="confirmCancel({{ $sale->id }})" 
-                                        class="btn btn-xs btn-error" title="Cancel"
+                                        class="btn btn-xs btn-error" title="{{ __('Cancel Transaction') }}"
                                     >
                                         <x-icon.x />
                                     </button>
@@ -89,7 +89,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center">No transactions found</td>
+                        <td colspan="6" class="text-center">{{ __('No transactions found') }}</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -104,16 +104,16 @@
     @if($showModal)
         <div class="modal modal-open" onclick="event.target === this || event.stopPropagation()">
             <div class="modal-box w-11/12 max-w-4xl overflow-visible">
-                <h3 class="font-bold text-lg mb-4">{{ $editingId ? 'Edit' : 'New' }} Transaction</h3>
+                <h3 class="font-bold text-lg mb-4">{{ $editingId ? __('Edit Transaction') : __('New Transaction') }}</h3>
                 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <!-- Customer & Price Type Selection -->
                     <div class="lg:col-span-3 bg-base-200 rounded-lg p-4">
-                        <h4 class="font-semibold mb-3">Customer & Pricing</h4>
+                        <h4 class="font-semibold mb-3">{{ __('Customer & Pricing') }}</h4>
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             <div class="form-control">
                                 <label class="label">
-                                    <span class="label-text">Customer (Optional)</span>
+                                    <span class="label-text">{{ __('Customer (Optional)') }}</span>
                                 </label>
                                 <div
                                     x-data="{
@@ -146,7 +146,7 @@
                                             @click="open = !open"
                                             class="select select-bordered select-sm flex-1 text-left flex items-center justify-between h-9"
                                         >
-                                            <span x-text="selectedLabel || 'Walk-in Customer'" :class="selectedLabel ? '' : 'opacity-50'"></span>
+                                            <span x-text="selectedLabel || {{ Js::from(__('Walk-in Customer')) }}" :class="selectedLabel ? '' : 'opacity-50'"></span>
                                             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                                         </button>
                                         <button
@@ -154,7 +154,7 @@
                                             x-show="selectedLabel"
                                             @click="clear()"
                                             class="btn btn-square btn-sm h-9 w-9"
-                                            title="Clear"
+                                            title="{{ __('Clear') }}"
                                         >
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                                         </button>
@@ -172,7 +172,7 @@
                                                 x-model="search"
                                                 x-ref="searchInput"
                                                 @click.stop
-                                                placeholder="Search customer..."
+                                                placeholder="{{ __('Search customer...') }}"
                                                 class="input input-sm input-bordered w-full"
                                                 x-init="$watch('open', val => val && $nextTick(() => $refs.searchInput.focus()))"
                                             >
@@ -181,9 +181,9 @@
                                             <li
                                                 @click="clear()"
                                                 class="px-3 py-2 cursor-pointer hover:bg-base-200 text-sm opacity-60"
-                                            >Walk-in Customer</li>
+                                            >{{ __('Walk-in Customer') }}</li>
                                             <template x-if="filtered.length === 0">
-                                                <li class="px-3 py-2 text-sm opacity-50">No customers found</li>
+                                                <li class="px-3 py-2 text-sm opacity-50">{{ __('No customers found') }}</li>
                                             </template>
                                             <template x-for="customer in filtered" :key="customer.id">
                                                 <li
@@ -198,7 +198,7 @@
                             </div>
                             <div class="form-control">
                                 <label class="label">
-                                    <span class="label-text">Price Type{{ $customer_id ? ' (Auto)' : '' }}</span>
+                                    <span class="label-text">{{ __('Price Type') }}{{ $customer_id ? ' (' . __('Auto') . ')' : '' }}</span>
                                 </label>
                                 @if($customer_id)
                                     <div class="select select-bordered select-sm bg-base-300 cursor-not-allowed w-100 h-9">
@@ -218,11 +218,11 @@
                     <!-- Products List -->
                     <div class="lg:col-span-2">
                         <div class="mb-3">
-                            <h4 class="font-semibold mb-2">Products</h4>
+                            <h4 class="font-semibold mb-2">{{ __('Products') }}</h4>
                             <input 
                                 type="text" 
                                 wire:model.live="productSearch" 
-                                placeholder="Search products..." 
+                                placeholder="{{ __('Search products...') }}" 
                                 class="input input-bordered w-full input-sm"
                             >
                         </div>
@@ -236,19 +236,19 @@
                                     <div class="text-sm opacity-75">Rp {{ number_format($product->price, 0, ',', '.') }}</div>
                                 </button>
                             @empty
-                                <div class="text-center text-sm opacity-50 py-4">No products found</div>
+                                <div class="text-center text-sm opacity-50 py-4">{{ __('No products found') }}</div>
                             @endforelse
                         </div>
 
-                        <h4 class="font-semibold mt-6 mb-3">Items</h4>
+                        <h4 class="font-semibold mt-6 mb-3">{{ __('Order Items') }}</h4>
                         <div class="border rounded-lg overflow-hidden">
                             <table class="table table-sm w-full">
                                 <thead>
                                     <tr>
-                                        <th>Product</th>
-                                        <th>Price</th>
-                                        <th>Qty</th>
-                                        <th>Subtotal</th>
+                                        <th>{{ __('Product') }}</th>
+                                        <th>{{ __('Price') }}</th>
+                                        <th>{{ __('Qty') }}</th>
+                                        <th>{{ __('Subtotal') }}</th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -292,7 +292,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="5" class="text-center">No items added</td>
+                                            <td colspan="5" class="text-center">{{ __('No items added') }}</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -302,16 +302,16 @@
 
                     <!-- Summary -->
                     <div class="bg-base-200 rounded-lg p-4 h-fit">
-                        <h4 class="font-semibold mb-4">Summary</h4>
+                        <h4 class="font-semibold mb-4">{{ __('Summary') }}</h4>
                         
                         <div class="space-y-3 text-sm">
                             <div class="flex justify-between">
-                                <span>Subtotal:</span>
+                                <span>{{ __('Subtotal') }}:</span>
                                 <span>Rp {{ number_format(array_sum(array_column($items, 'subtotal')), 0, ',', '.') }}</span>
                             </div>
 
                             <div class="flex justify-between items-center">
-                                <label>Discount:</label>
+                                <label>{{ __('Discount') }}:</label>
                                 <div class="w-28">
                                     <x-currency-input
                                         wire-model="discount"
@@ -327,19 +327,19 @@
                             <div class="divider my-2"></div>
 
                             <div class="flex justify-between font-semibold">
-                                <span>Total:</span>
+                                <span>{{ __('Total') }}:</span>
                                 <span>Rp {{ number_format($total_price, 0, ',', '.') }}</span>
                             </div>
 
                             <div class="flex justify-between items-center">
-                                <label>Paid Amount:</label>
+                                <label>{{ __('Paid Amount') }}:</label>
                                 <div class="w-28">
                                     <x-currency-input
                                         wire-model="paid_amount"
                                         size="sm"
                                         :live="true"
                                         live-method="updatedPaidAmount"
-                                        placeholder="Auto"
+                                        :placeholder="__('Auto')"
                                     />
                                 </div>
                             </div>
@@ -347,7 +347,7 @@
                             <div class="divider my-2"></div>
 
                             <div class="flex justify-between font-semibold">
-                                <span>Change:</span>
+                                <span>{{ __('Change') }}:</span>
                                 <span>Rp {{ number_format($change_amount, 0, ',', '.') }}</span>
                             </div>
                         </div>
@@ -359,7 +359,7 @@
                                 class="btn btn-sm"
                             >
                                 <x-icon.x />
-                                Cancel
+                                {{ __('Cancel') }}
                             </button>
                             <button 
                                 type="button"
@@ -369,7 +369,7 @@
                                 class="btn btn-primary btn-sm"
                             >
                                 <x-icon.check />
-                                Save
+                                {{ __('Save') }}
                             </button>
                         </div>
                     </div>
@@ -380,43 +380,43 @@
 
     <!-- Confirm Delete Dialog -->
     <x-confirm-dialog 
-        title="Delete Transaction"
-        message="Are you sure you want to delete this transaction? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
+        :title="__('Delete Transaction')"
+        :message="__('Are you sure you want to delete this transaction? This action cannot be undone.')"
+        :confirmText="__('Delete')"
+        :cancelText="__('Cancel')"
         isDangerous="true"
         onConfirm="$wire.delete({{ $deleteId ?? 'null' }})"
     />
 
     <!-- Confirm Refund Dialog -->
     <x-confirm-refund-dialog 
-        title="Refund Transaction"
-        message="Are you sure you want to refund this transaction? This action cannot be undone."
-        confirmText="Refund"
-        cancelText="Cancel"
+        :title="__('Refund Transaction')"
+        :message="__('Are you sure you want to refund this transaction? This action cannot be undone.')"
+        :confirmText="__('Refund')"
+        :cancelText="__('Cancel')"
         onConfirm="$wire.refund({{ $refundId ?? 'null' }})"
     >
         <textarea
             wire:model="statusReason"
             class="textarea textarea-bordered w-full"
             rows="2"
-            placeholder="Reason (optional)"
+            placeholder="{{ __('Reason (optional)') }}"
         ></textarea>
     </x-confirm-refund-dialog>
 
     <!-- Confirm Cancel Dialog -->
     <x-confirm-cancel-dialog
-        title="Cancel Transaction"
-        message="Are you sure you want to cancel this transaction? Stock will be restored and status will be set to VOID."
-        confirmText="Cancel"
-        cancelText="Close"
+        :title="__('Cancel Transaction')"
+        :message="__('Are you sure you want to cancel this transaction? Stock will be restored and status will be set to VOID.')"
+        :confirmText="__('Cancel Transaction')"
+        :cancelText="__('Close')"
         onConfirm="$wire.cancel({{ $cancelId ?? 'null' }})"
     >
         <textarea
             wire:model="statusReason"
             class="textarea textarea-bordered w-full"
             rows="2"
-            placeholder="Reason (optional)"
+            placeholder="{{ __('Reason (optional)') }}"
         ></textarea>
     </x-confirm-cancel-dialog>
 
@@ -434,12 +434,12 @@
                 @if(in_array($viewStatus, ['REFUND', 'VOID']))
                     <div class="bg-base-200 rounded-lg p-4 mb-6 text-sm space-y-1">
                         <div>
-                            <span class="font-semibold">{{ $viewStatus === 'REFUND' ? 'Refunded' : 'Cancelled' }} by:</span>
+                            <span class="font-semibold">{{ $viewStatus === 'REFUND' ? __('Refunded by') : __('Cancelled by') }}:</span>
                             {{ $viewStatusBy }} · {{ $viewStatusAt }}
                         </div>
                         @if($viewStatusReason)
                             <div>
-                                <span class="font-semibold">Reason:</span>
+                                <span class="font-semibold">{{ __('Reason') }}:</span>
                                 {{ $viewStatusReason }}
                             </div>
                         @endif
@@ -449,15 +449,15 @@
                 <div class="space-y-6">
                     <!-- Items -->
                     <div>
-                        <h4 class="font-semibold mb-3">Items</h4>
+                        <h4 class="font-semibold mb-3">{{ __('Order Items') }}</h4>
                         <div class="border rounded-lg overflow-hidden">
                             <table class="table table-sm w-full">
                                 <thead>
                                     <tr>
-                                        <th>Product</th>
-                                        <th>Price</th>
-                                        <th>Qty</th>
-                                        <th>Subtotal</th>
+                                        <th>{{ __('Product') }}</th>
+                                        <th>{{ __('Price') }}</th>
+                                        <th>{{ __('Qty') }}</th>
+                                        <th>{{ __('Subtotal') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -470,7 +470,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="4" class="text-center">No items</td>
+                                            <td colspan="4" class="text-center">{{ __('No items') }}</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -481,31 +481,31 @@
                     <!-- Summary -->
                     <div class="bg-base-200 rounded-lg p-4 space-y-3 text-sm">
                         <div class="flex justify-between">
-                            <span>Subtotal:</span>
+                            <span>{{ __('Subtotal') }}:</span>
                             <span>Rp {{ number_format(array_sum(array_column($viewItems, 'subtotal')), 0, ',', '.') }}</span>
                         </div>
 
                         <div class="flex justify-between">
-                            <span>Discount:</span>
+                            <span>{{ __('Discount') }}:</span>
                             <span>Rp {{ number_format($discount, 0, ',', '.') }}</span>
                         </div>
 
                         <div class="divider my-2"></div>
 
                         <div class="flex justify-between font-semibold">
-                            <span>Total:</span>
+                            <span>{{ __('Total') }}:</span>
                             <span>Rp {{ number_format($total_price, 0, ',', '.') }}</span>
                         </div>
 
                         <div class="flex justify-between">
-                            <span>Paid Amount:</span>
+                            <span>{{ __('Paid Amount') }}:</span>
                             <span>Rp {{ number_format($paid_amount, 0, ',', '.') }}</span>
                         </div>
 
                         <div class="divider my-2"></div>
 
                         <div class="flex justify-between font-semibold">
-                            <span>Change:</span>
+                            <span>{{ __('Change') }}:</span>
                             <span>Rp {{ number_format($change_amount, 0, ',', '.') }}</span>
                         </div>
                     </div>
@@ -518,7 +518,7 @@
                         class="btn btn-sm"
                     >
                         <x-icon.x />
-                        Close
+                        {{ __('Close') }}
                     </button>
                     <button 
                         type="button"
@@ -526,7 +526,7 @@
                         class="btn btn-primary btn-sm"
                     >
                         <x-icon.printer />
-                        Print
+                        {{ __('Print') }}
                     </button>
                 </div>
             </div>

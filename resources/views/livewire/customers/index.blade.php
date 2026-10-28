@@ -4,14 +4,14 @@
             <input 
                 type="text" 
                 wire:model.live="search" 
-                placeholder="Search customers..." 
+                placeholder="{{ __('Search customers...') }}" 
                 class="input input-bordered flex-1 lg:flex-none lg:w-64"
             >
             <select 
                 wire:model.live="priceListTypeFilter"
                 class="select select-bordered"
             >
-                <option value="">All Price Types</option>
+                <option value="">{{ __('All Price Types') }}</option>
                 @foreach($priceListTypes as $priceListType)
                     <option value="{{ $priceListType->id }}">{{ $priceListType->name }}</option>
                 @endforeach
@@ -22,7 +22,7 @@
             class="btn btn-primary w-full lg:w-auto"
         >
             <x-icon.plus />
-            Add Customer
+            {{ __('Add Customer') }}
         </button>
     </div>
 
@@ -31,11 +31,11 @@
             <thead>
                 <tr>
                     <th style="width: 50px;">#</th>
-                    <th>Name</th>
-                    <th>Price List Type</th>
-                    <th>Phone</th>
-                    <th>Address</th>
-                    <th style="width: 100px;">Actions</th>
+                    <th>{{ __('Name') }}</th>
+                    <th>{{ __('Price List Type') }}</th>
+                    <th>{{ __('Phone') }}</th>
+                    <th>{{ __('Address') }}</th>
+                    <th style="width: 100px;">{{ __('Actions') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -54,13 +54,13 @@
                             <div class="flex gap-1">
                                 <button 
                                     wire:click="edit({{ $customer->id }})" 
-                                    class="btn btn-xs btn-warning" title="Edit"
+                                    class="btn btn-xs btn-warning" title="{{ __('Edit') }}"
                                 >
                                     <x-icon.pencil />
                                 </button>
                                 <button 
                                     wire:click="confirmDelete({{ $customer->id }})" 
-                                    class="btn btn-xs btn-error" title="Delete"
+                                    class="btn btn-xs btn-error" title="{{ __('Delete') }}"
                                 >
                                     <x-icon.trash />
                                 </button>
@@ -69,7 +69,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center">No customers found</td>
+                        <td colspan="6" class="text-center">{{ __('No customers found') }}</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -84,15 +84,15 @@
     @if($showModal)
         <div class="modal modal-open">
             <div class="modal-box">
-                <h3 class="font-bold text-lg mb-4">{{ $editingId ? 'Edit' : 'Add' }} Customer</h3>
+                <h3 class="font-bold text-lg mb-4">{{ $editingId ? __('Edit Customer') : __('Add Customer') }}</h3>
                 
                 <form wire:submit="save">
                     <div class="form-control w-full mb-4">
                         <label class="label">
-                            <span class="label-text">Price List Type</span>
+                            <span class="label-text">{{ __('Price List Type') }}</span>
                         </label>
                         <select wire:model="price_list_type_id" class="select select-bordered w-full">
-                            <option value="">Select Price List Type</option>
+                            <option value="">{{ __('Select Price List Type') }}</option>
                             @foreach($priceListTypes as $priceListType)
                                 <option value="{{ $priceListType->id }}">{{ $priceListType->name }} ({{ $priceListType->type }})</option>
                             @endforeach
@@ -102,7 +102,7 @@
 
                     <div class="form-control w-full mb-4">
                         <label class="label">
-                            <span class="label-text">Name</span>
+                            <span class="label-text">{{ __('Name') }}</span>
                         </label>
                         <input 
                             type="text" 
@@ -114,26 +114,26 @@
 
                     <div class="form-control w-full mb-4">
                         <label class="label">
-                            <span class="label-text">Phone</span>
+                            <span class="label-text">{{ __('Phone') }}</span>
                         </label>
                         <input 
                             type="text" 
                             wire:model="phone" 
                             class="input input-bordered w-full"
-                            placeholder="Optional"
+                            placeholder="{{ __('Optional') }}"
                         >
                         @error('phone') <span class="text-error text-sm">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="form-control w-full mb-6">
                         <label class="label">
-                            <span class="label-text">Address</span>
+                            <span class="label-text">{{ __('Address') }}</span>
                         </label>
                         <textarea 
                             wire:model="address" 
                             rows="3"
                             class="textarea textarea-bordered w-full"
-                            placeholder="Optional address..."
+                            placeholder="{{ __('Optional address...') }}"
                         ></textarea>
                         @error('address') <span class="text-error text-sm">{{ $message }}</span> @enderror
                     </div>
@@ -145,14 +145,14 @@
                             class="btn"
                         >
                             <x-icon.x />
-                            Cancel
+                            {{ __('Cancel') }}
                         </button>
                         <button 
                             type="submit" 
                             class="btn btn-primary"
                         >
                             <x-icon.check />
-                            Save
+                            {{ __('Save') }}
                         </button>
                     </div>
                 </form>
@@ -165,10 +165,10 @@
 
     <!-- Confirm Delete Dialog -->
     <x-confirm-dialog 
-        title="Delete Customer"
-        message="Are you sure you want to delete this customer? This action cannot be undone."
-        confirmText="Delete"
-        cancelText="Cancel"
+        :title="__('Delete Customer')"
+        :message="__('Are you sure you want to delete this customer? This action cannot be undone.')"
+        :confirmText="__('Delete')"
+        :cancelText="__('Cancel')"
         isDangerous="true"
         onConfirm="$wire.delete({{ $deleteId ?? 'null' }})"
     />
