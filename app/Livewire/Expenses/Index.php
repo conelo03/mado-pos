@@ -27,7 +27,7 @@ class Index extends Component
         'date' => 'required|date',
         'category' => 'required|string|max:100',
         'description' => 'nullable|string|max:255',
-        'amount' => 'required|numeric|gt:0',
+        'amount' => 'required|numeric|gt:0|max:9999999999.99',
     ];
 
     public function mount()

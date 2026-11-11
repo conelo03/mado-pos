@@ -24,7 +24,7 @@ class Index extends Component
         'name' => 'required|string|max:255',
         'email' => 'required|email|unique:users,email',
         'password' => 'required|string|min:6',
-        'role' => 'required|in:ADMIN,CASHIER',
+        'role' => 'required|in:OWNER,ADMIN,CASHIER',
     ];
 
     public function updatedSearch()
@@ -62,7 +62,7 @@ class Index extends Component
             $rules = [
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email,' . $this->editingId,
-                'role' => 'required|in:ADMIN,CASHIER',
+                'role' => 'required|in:OWNER,ADMIN,CASHIER',
             ];
             if ($this->password) {
                 $rules['password'] = 'required|string|min:6';

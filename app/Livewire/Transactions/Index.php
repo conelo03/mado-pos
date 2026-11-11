@@ -304,6 +304,10 @@ class Index extends Component
         $paidAmount = $this->total_price;
 
         if ($this->payment_method === 'CASH' && $this->paid_amount > 0) {
+            if ($this->paid_amount < $this->total_price) {
+                $this->dispatch('notify', message: __('Paid amount is less than total'));
+                return;
+            }
             $paidAmount = $this->paid_amount;
         }
 

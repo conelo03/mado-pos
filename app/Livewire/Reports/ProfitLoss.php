@@ -19,24 +19,26 @@ class ProfitLoss extends Component
 
     public function render()
     {
-        $range = [$this->startDate . ' 00:00:00', $this->endDate . ' 23:59:59'];
+        $inRange = fn ($query, $column) => $query
+            ->when($this->startDate, fn ($q) => $q->where($column, '>=', $this->startDate . ' 00:00:00'))
+            ->when($this->endDate, fn ($q) => $q->where($column, '<=', $this->endDate . ' 23:59:59'));
 
-        $paid = Sale::where('status', 'PAID')->whereBetween('created_at', $range);
-        $revenueCash = (clone $paid)->where('payment_method', 'CASH')->sum('total_price');
-        $revenueNonCash = (clone $paid)->where('payment_method', 'NON_CASH')->sum('total_price');
-        $revenue = $revenueCash + $revenueNonCash;
-        $transactionCount = (clone $paid)->count();
-        $cogs = (clone $paid)->sum('total_cost');
+        $sold = $inRange(Sale::whereIn('status', ['PAID', 'REFUND']), 'created_at');
+        $revenueCash = (clone $sold)->where('payment_method', 'CASH')->sum('total_price');
+        $revenueNonCash = (clone $sold)->where('payment_method', 'NON_CASH')->sum('total_price');
+        $transactionCount = (clone $sold)->count();
+        $cogs = (clone $sold)->sum('total_cost');
 
-        $refunds = Sale::where('status', 'REFUND')->whereBetween('created_at', $range);
+        $refunds = $inRange(Sale::where('status', 'REFUND'), 'refunded_at');
         $refundCount = (clone $refunds)->count();
         $refundAmount = (clone $refunds)->sum('total_price');
-        $refundCost = (clone $refunds)->sum('total_cost');
 
-        $grossProfit = $revenue - $cogs - $refundCost;
+        $revenue = $revenueCash + $revenueNonCash - $refundAmount;
+        $grossProfit = $revenue - $cogs;
 
-        $expensesByCategory = Expense::whereDate('date', '>=', $this->startDate)
-            ->whereDate('date', '<=', $this->endDate)
+        $expensesByCategory = Expense::query()
+            ->when($this->startDate, fn ($q) => $q->whereDate('date', '>=', $this->startDate))
+            ->when($this->endDate, fn ($q) => $q->whereDate('date', '<=', $this->endDate))
             ->selectRaw('category, SUM(amount) as total')
             ->groupBy('category')
             ->orderByDesc('total')
@@ -53,7 +55,6 @@ class ProfitLoss extends Component
             'cogs' => $cogs,
             'refundCount' => $refundCount,
             'refundAmount' => $refundAmount,
-            'refundCost' => $refundCost,
             'grossProfit' => $grossProfit,
             'expensesByCategory' => $expensesByCategory,
             'totalExpenses' => $totalExpenses,

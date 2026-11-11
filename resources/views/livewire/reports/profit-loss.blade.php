@@ -67,6 +67,13 @@
                     <td class="pl-8">{{ __('Non-cash Sales') }}</td>
                     <td class="text-right">{{ $rp($revenueNonCash) }}</td>
                 </tr>
+                <tr>
+                    <td class="pl-8">
+                        {{ __('Refund') }}
+                        <span class="opacity-60">({{ __(':count refunds, :amount returned to customers', ['count' => $refundCount, 'amount' => $rp($refundAmount)]) }})</span>
+                    </td>
+                    <td class="text-right">{{ $rp(-$refundAmount) }}</td>
+                </tr>
                 <tr class="font-semibold">
                     <td>{{ __('Total Revenue') }} <span class="font-normal opacity-60">({{ __(':count transactions', ['count' => $transactionCount]) }})</span></td>
                     <td class="text-right">{{ $rp($revenue) }}</td>
@@ -78,13 +85,6 @@
                 <tr>
                     <td class="pl-8">{{ __('Cost of goods sold') }}</td>
                     <td class="text-right">{{ $rp(-$cogs) }}</td>
-                </tr>
-                <tr>
-                    <td class="pl-8">
-                        {{ __('Cost of refunded goods') }}
-                        <span class="opacity-60">({{ __(':count refunds, :amount returned to customers', ['count' => $refundCount, 'amount' => $rp($refundAmount)]) }})</span>
-                    </td>
-                    <td class="text-right">{{ $rp(-$refundCost) }}</td>
                 </tr>
                 <tr class="font-semibold">
                     <td>{{ __('Gross Profit') }}</td>
