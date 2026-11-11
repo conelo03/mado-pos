@@ -75,6 +75,12 @@
                 @endforeach
             </select>
         </div>
+        <div>
+            <button type="button" wire:click="export" wire:loading.attr="disabled" wire:target="export" class="btn btn-outline">
+                <x-icon.document-text class="w-5 h-5" />
+                {{ __('Export CSV') }}
+            </button>
+        </div>
     </div>
 
     <div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">

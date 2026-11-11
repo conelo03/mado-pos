@@ -27,7 +27,7 @@ class StockInput extends Component
 
     public function render()
     {
-        $movements = StockMovement::where('reference_type', 'PURCHASE')
+        $movements = StockMovement::with('item')->where('reference_type', 'PURCHASE')
             ->whereHas('item', function ($query) {
                 $query->where('name', 'like', "%{$this->search}%");
             })

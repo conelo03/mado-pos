@@ -24,6 +24,12 @@
                 class="input input-bordered w-full"
             >
         </div>
+        <div>
+            <button type="button" wire:click="export" wire:loading.attr="disabled" wire:target="export" class="btn btn-outline">
+                <x-icon.document-text class="w-5 h-5" />
+                {{ __('Export CSV') }}
+            </button>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

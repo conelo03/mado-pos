@@ -27,7 +27,7 @@ class StockOpname extends Component
 
     public function render()
     {
-        $movements = StockMovement::whereIn('reference_type', ['ADJUSTMENT', 'WASTE'])
+        $movements = StockMovement::with('item')->whereIn('reference_type', ['ADJUSTMENT', 'WASTE'])
             ->whereHas('item', function ($query) {
                 $query->where('name', 'like', "%{$this->search}%");
             })

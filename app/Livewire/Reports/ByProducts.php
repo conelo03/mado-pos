@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Reports;
 
+use App\Livewire\Concerns\ExportsCsv;
 use App\Models\SaleItem;
 use App\Models\Item;
 use Livewire\Component;
@@ -9,6 +10,7 @@ use Livewire\WithPagination;
 
 class ByProducts extends Component
 {
+    use ExportsCsv;
     use WithPagination;
 
     public $startDate = '';
@@ -21,30 +23,47 @@ class ByProducts extends Component
         $this->endDate = now()->format('Y-m-d');
     }
 
+    private function reportRows()
+    {
+        return SaleItem::query()
+            ->whereHas('sale', fn ($q) => $q
+                ->where('status', 'PAID')
+                ->when($this->startDate, fn ($q) => $q->where('created_at', '>=', $this->startDate . ' 00:00:00'))
+                ->when($this->endDate, fn ($q) => $q->where('created_at', '<=', $this->endDate . ' 23:59:59')))
+            ->when($this->productId, fn ($q) => $q->where('item_id', $this->productId))
+            ->selectRaw('item_id, SUM(qty) as qty, SUM(subtotal) as subtotal, SUM(cost_subtotal) as cost_subtotal')
+            ->groupBy('item_id')
+            ->orderByRaw('MIN(id)')
+            ->with('item')
+            ->get()
+            ->map(fn ($row) => [
+                'product_name' => $row->item->name,
+                'qty' => (float) $row->qty,
+                'subtotal' => (float) $row->subtotal,
+                'cost_subtotal' => (float) $row->cost_subtotal,
+            ]);
+    }
+
+    public function export()
+    {
+        $rows = $this->reportRows()->map(fn ($row) => [
+            $row['product_name'],
+            $row['qty'],
+            $row['cost_subtotal'],
+            $row['subtotal'],
+        ]);
+
+        return $this->csvDownload('laporan-produk_' . $this->csvPeriod() . '.csv', [
+            __('Product Name'),
+            __('Qty'),
+            __('Cost Subtotal'),
+            __('Subtotal'),
+        ], $rows);
+    }
+
     public function render()
     {
-        $query = SaleItem::with('item', 'sale')
-            ->whereHas('sale', function ($q) {
-                $q->whereBetween('created_at', [
-                    $this->startDate . ' 00:00:00',
-                    $this->endDate . ' 23:59:59'
-                ])->where('status', 'PAID');
-            });
-
-        if ($this->productId) {
-            $query->where('item_id', $this->productId);
-        }
-
-        $items = $query->get();
-
-        $report = $items->groupBy('item_id')->map(function ($group) {
-            return [
-                'product_name' => $group->first()->item->name,
-                'qty' => $group->sum('qty'),
-                'subtotal' => $group->sum('subtotal'),
-                'cost_subtotal' => $group->sum('cost_subtotal'),
-            ];
-        })->values();
+        $report = $this->reportRows();
 
         $totalQty = $report->sum('qty');
         $totalSubtotal = $report->sum('subtotal');

@@ -69,7 +69,7 @@ class Index extends Component
             ->where('name', 'like', "%{$this->productSearch}%")
             ->get();
 
-        $customers = Customer::all();
+        $customers = Customer::with('priceListType')->get();
         $priceListTypes = PriceListType::all();
 
         return view('livewire.transactions.index', [

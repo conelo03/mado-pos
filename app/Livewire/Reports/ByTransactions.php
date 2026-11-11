@@ -2,12 +2,14 @@
 
 namespace App\Livewire\Reports;
 
+use App\Livewire\Concerns\ExportsCsv;
 use App\Models\Sale;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class ByTransactions extends Component
 {
+    use ExportsCsv;
     use WithPagination;
 
     public $startDate = '';
@@ -23,55 +25,55 @@ class ByTransactions extends Component
         $this->endDate = now()->format('Y-m-d');
     }
 
-    public function render()
+    private function filteredQuery()
     {
-        $query = Sale::with('customer', 'priceListType')
-            ->whereBetween('created_at', [
-                $this->startDate . ' 00:00:00',
-                $this->endDate . ' 23:59:59'
-            ]);
+        return Sale::query()
+            ->when($this->startDate, fn ($q) => $q->where('created_at', '>=', $this->startDate . ' 00:00:00'))
+            ->when($this->endDate, fn ($q) => $q->where('created_at', '<=', $this->endDate . ' 23:59:59'))
+            ->when($this->status, fn ($q) => $q->where('status', $this->status))
+            ->when($this->customerFilter, fn ($q) => $q->where('customer_id', $this->customerFilter))
+            ->when($this->priceListTypeFilter, fn ($q) => $q->where('price_list_type_id', $this->priceListTypeFilter))
+            ->when($this->paymentMethodFilter, fn ($q) => $q->where('payment_method', $this->paymentMethodFilter));
+    }
 
-        if ($this->status) {
-            $query->where('status', $this->status);
-        }
+    public function export()
+    {
+        $sales = $this->filteredQuery()
+            ->with('customer', 'priceListType')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        if ($this->customerFilter) {
-            $query->where('customer_id', $this->customerFilter);
-        }
-
-        if ($this->priceListTypeFilter) {
-            $query->where('price_list_type_id', $this->priceListTypeFilter);
-        }
-
-        if ($this->paymentMethodFilter) {
-            $query->where('payment_method', $this->paymentMethodFilter);
-        }
-
-        $sales = $query->orderBy('created_at', 'desc')->paginate(10);
-
-        $totalQuery = Sale::whereBetween('created_at', [
-            $this->startDate . ' 00:00:00',
-            $this->endDate . ' 23:59:59'
+        $rows = $sales->map(fn ($sale) => [
+            $sale->invoice_no,
+            $sale->created_at->format('d/m/Y H:i'),
+            $sale->customer?->name ?? __('Walk-in Customer'),
+            $sale->priceListType?->name ?? '-',
+            Sale::paymentMethodLabel($sale->payment_method),
+            __($sale->status),
+            (float) $sale->total_cost,
+            (float) $sale->total_price,
         ]);
 
-        if ($this->status) {
-            $totalQuery->where('status', $this->status);
-        }
+        return $this->csvDownload('laporan-transaksi_' . $this->csvPeriod() . '.csv', [
+            __('Invoice'),
+            __('Date'),
+            __('Customer'),
+            __('Price Type'),
+            __('Payment'),
+            __('Status'),
+            __('Total Cost'),
+            __('Total Revenue'),
+        ], $rows);
+    }
 
-        if ($this->customerFilter) {
-            $totalQuery->where('customer_id', $this->customerFilter);
-        }
+    public function render()
+    {
+        $query = $this->filteredQuery();
 
-        if ($this->priceListTypeFilter) {
-            $totalQuery->where('price_list_type_id', $this->priceListTypeFilter);
-        }
+        $totalRevenue = (clone $query)->sum('total_price');
+        $totalCost = (clone $query)->sum('total_cost');
 
-        if ($this->paymentMethodFilter) {
-            $totalQuery->where('payment_method', $this->paymentMethodFilter);
-        }
-
-        $totalRevenue = $totalQuery->sum('total_price');
-        $totalCost = $totalQuery->sum('total_cost');
+        $sales = $query->with('customer', 'priceListType')->orderBy('created_at', 'desc')->paginate(10);
 
         $customers = \App\Models\Customer::all();
         $priceListTypes = \App\Models\PriceListType::all();
