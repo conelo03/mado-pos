@@ -108,217 +108,205 @@
 
     <!-- Modal -->
     @if($showModal)
+        @php $cartQty = collect($items)->pluck('qty', 'item_id'); @endphp
         <div class="modal modal-open" onclick="event.target === this || event.stopPropagation()">
-            <div class="modal-box w-11/12 max-w-4xl">
-                <h3 class="font-bold text-lg mb-4">{{ $editingId ? __('Edit Transaction') : __('New Transaction') }}</h3>
-                
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Customer & Price Type Selection -->
-                    <div class="lg:col-span-3 bg-base-200 rounded-lg p-4">
-                        <h4 class="font-semibold mb-3">{{ __('Customer & Pricing') }}</h4>
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text">{{ __('Customer (Optional)') }}</span>
-                                </label>
-                                <div
-                                    x-data="{
-                                        open: false,
-                                        search: '',
-                                        selectedLabel: '',
-                                        customers: {{ Js::from($customers->map(fn($c) => ['id' => $c->id, 'name' => $c->name . ($c->priceListType ? ' (' . $c->priceListType->type . ')' : '')])) }},
-                                        get filtered() {
-                                            if (!this.search) return this.customers;
-                                            return this.customers.filter(c => c.name.toLowerCase().includes(this.search.toLowerCase()));
-                                        },
-                                        select(customer) {
-                                            this.selectedLabel = customer ? customer.name : '';
-                                            this.search = '';
-                                            this.open = false;
-                                            $wire.setCustomer(customer ? customer.id : null);
-                                        },
-                                        clear() {
-                                            this.selectedLabel = '';
-                                            this.search = '';
-                                            this.open = false;
-                                            $wire.setCustomer(null);
-                                        }
-                                    }"
-                                    class="relative"
-                                >
-                                    <div class="flex gap-1">
-                                        <button
-                                            type="button"
-                                            @click="open = !open"
-                                            class="select select-bordered select-sm flex-1 text-left flex items-center justify-between h-9"
-                                        >
-                                            <span x-text="selectedLabel || {{ Js::from(__('Walk-in Customer')) }}" :class="selectedLabel ? '' : 'opacity-50'"></span>
-                                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            x-show="selectedLabel"
-                                            @click="clear()"
-                                            class="btn btn-square btn-sm h-9 w-9"
-                                            title="{{ __('Clear') }}"
-                                        >
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                        </button>
-                                    </div>
+            <div class="modal-box w-11/12 max-w-6xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-lg">{{ $editingId ? __('Edit Transaction') : __('New Transaction') }}</h3>
+                    <button type="button" wire:click="closeModal" class="btn btn-sm btn-circle btn-ghost" title="{{ __('Close') }}">
+                        <x-icon.x />
+                    </button>
+                </div>
 
-                                    <div
-                                        x-show="open"
-                                        x-transition
-                                        @click.outside="open = false"
-                                        class="absolute z-50 w-full mt-1 bg-base-100 border border-base-300 rounded-box shadow-lg"
-                                    >
-                                        <div class="p-2 border-b border-base-300">
-                                            <input
-                                                type="text"
-                                                x-model="search"
-                                                x-ref="searchInput"
-                                                @click.stop
-                                                placeholder="{{ __('Search customer...') }}"
-                                                class="input input-sm input-bordered w-full"
-                                                x-init="$watch('open', val => val && $nextTick(() => $refs.searchInput.focus()))"
-                                            >
-                                        </div>
-                                        <ul class="max-h-48 overflow-y-auto py-1">
-                                            <li
-                                                @click="clear()"
-                                                class="px-3 py-2 cursor-pointer hover:bg-base-200 text-sm opacity-60"
-                                            >{{ __('Walk-in Customer') }}</li>
-                                            <template x-if="filtered.length === 0">
-                                                <li class="px-3 py-2 text-sm opacity-50">{{ __('No customers found') }}</li>
-                                            </template>
-                                            <template x-for="customer in filtered" :key="customer.id">
-                                                <li
-                                                    @click="select(customer)"
-                                                    class="px-3 py-2 cursor-pointer hover:bg-base-200 text-sm"
-                                                    x-text="customer.name"
-                                                ></li>
-                                            </template>
-                                        </ul>
-                                    </div>
-                                </div>
+                <!-- Customer & Price Type Selection -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{{ __('Customer (Optional)') }}</label>
+                        <div
+                            x-data="{
+                                open: false,
+                                search: '',
+                                selectedLabel: '',
+                                customers: {{ Js::from($customers->map(fn($c) => ['id' => $c->id, 'name' => $c->name . ($c->priceListType ? ' (' . $c->priceListType->type . ')' : '')])) }},
+                                get filtered() {
+                                    if (!this.search) return this.customers;
+                                    return this.customers.filter(c => c.name.toLowerCase().includes(this.search.toLowerCase()));
+                                },
+                                select(customer) {
+                                    this.selectedLabel = customer ? customer.name : '';
+                                    this.search = '';
+                                    this.open = false;
+                                    $wire.setCustomer(customer ? customer.id : null);
+                                },
+                                clear() {
+                                    this.selectedLabel = '';
+                                    this.search = '';
+                                    this.open = false;
+                                    $wire.setCustomer(null);
+                                }
+                            }"
+                            class="relative"
+                        >
+                            <div class="flex gap-1">
+                                <button
+                                    type="button"
+                                    @click="open = !open"
+                                    class="select flex-1 text-left"
+                                >
+                                    <span class="truncate" x-text="selectedLabel || {{ Js::from(__('Walk-in Customer')) }}" :class="selectedLabel ? '' : 'opacity-50'"></span>
+                                </button>
+                                <button
+                                    type="button"
+                                    x-show="selectedLabel"
+                                    @click="clear()"
+                                    class="btn btn-square"
+                                    title="{{ __('Clear') }}"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </button>
                             </div>
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text">{{ __('Price Type') }}{{ $customer_id ? ' (' . __('Auto') . ')' : '' }}</span>
-                                </label>
-                                @if($customer_id)
-                                    <div class="select select-bordered select-sm bg-base-300 cursor-not-allowed w-full h-9">
-                                        {{ $priceListTypes->firstWhere('id', $price_list_type_id)?->name }} ({{ $priceListTypes->firstWhere('id', $price_list_type_id)?->type }})
-                                    </div>
-                                @else
-                                    <select wire:model.live="price_list_type_id" class="select select-bordered select-sm w-full h-9">
-                                        @foreach($priceListTypes as $priceType)
-                                            <option value="{{ $priceType->id }}">{{ $priceType->name }} ({{ $priceType->type }})</option>
-                                        @endforeach
-                                    </select>
-                                @endif
+
+                            <div
+                                x-show="open"
+                                x-transition
+                                @click.outside="open = false"
+                                class="absolute z-50 w-full mt-1 bg-base-100 border border-base-300 rounded-box shadow-lg"
+                            >
+                                <div class="p-2 border-b border-base-300">
+                                    <input
+                                        type="text"
+                                        x-model="search"
+                                        x-ref="searchInput"
+                                        @click.stop
+                                        placeholder="{{ __('Search customer...') }}"
+                                        class="input input-sm input-bordered w-full"
+                                        x-init="$watch('open', val => val && $nextTick(() => $refs.searchInput.focus()))"
+                                    >
+                                </div>
+                                <ul class="max-h-48 overflow-y-auto py-1">
+                                    <li
+                                        @click="clear()"
+                                        class="px-3 py-2 cursor-pointer hover:bg-base-200 text-sm opacity-60"
+                                    >{{ __('Walk-in Customer') }}</li>
+                                    <template x-if="filtered.length === 0">
+                                        <li class="px-3 py-2 text-sm opacity-50">{{ __('No customers found') }}</li>
+                                    </template>
+                                    <template x-for="customer in filtered" :key="customer.id">
+                                        <li
+                                            @click="select(customer)"
+                                            class="px-3 py-2 cursor-pointer hover:bg-base-200 text-sm"
+                                            x-text="customer.name"
+                                        ></li>
+                                    </template>
+                                </ul>
                             </div>
                         </div>
                     </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{{ __('Price Type') }}{{ $customer_id ? ' (' . __('Auto') . ')' : '' }}</label>
+                        @if($customer_id)
+                            <div class="select w-full bg-base-200 cursor-not-allowed">
+                                {{ $priceListTypes->firstWhere('id', $price_list_type_id)?->name }} ({{ $priceListTypes->firstWhere('id', $price_list_type_id)?->type }})
+                            </div>
+                        @else
+                            <select wire:model.live="price_list_type_id" class="select w-full">
+                                @foreach($priceListTypes as $priceType)
+                                    <option value="{{ $priceType->id }}">{{ $priceType->name }} ({{ $priceType->type }})</option>
+                                @endforeach
+                            </select>
+                        @endif
+                    </div>
+                </div>
 
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
                     <!-- Products List -->
-                    <div class="lg:col-span-2">
-                        <div class="mb-3">
-                            <h4 class="font-semibold mb-2">{{ __('Products') }}</h4>
-                            <input 
-                                type="text" 
-                                wire:model.live="productSearch" 
-                                placeholder="{{ __('Search products...') }}" 
-                                class="input input-bordered w-full input-sm"
-                            >
-                        </div>
-                        <div class="space-y-2 min-h-64 max-h-64 overflow-y-auto border rounded-lg p-3">
+                    <div class="lg:col-span-3">
+                        <h4 class="font-semibold mb-2">{{ __('Products') }}</h4>
+                        <input
+                            type="text"
+                            wire:model.live="productSearch"
+                            placeholder="{{ __('Search products...') }}"
+                            class="input w-full mb-3"
+                        >
+                        <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 content-start gap-2 h-64 lg:h-[26rem] overflow-y-auto pr-1">
                             @forelse($products as $product)
-                                <button 
+                                @php $inCart = $cartQty->get($product->id); @endphp
+                                <button
+                                    type="button"
+                                    wire:key="product-{{ $product->id }}"
                                     wire:click="addItem({{ $product->id }})"
-                                    class="w-full text-left px-3 py-2 hover:bg-base-200 border rounded"
+                                    class="relative flex flex-col justify-between gap-2 min-h-20 p-3 text-left rounded-lg border transition-colors {{ $inCart ? 'border-primary bg-primary/5' : 'border-base-300 hover:border-primary/50 hover:bg-base-200' }}"
                                 >
-                                    <div class="font-medium">{{ $product->name }}</div>
-                                    <div class="text-sm opacity-75">Rp {{ number_format($product->price, 0, ',', '.') }}</div>
+                                    <span class="text-sm font-medium leading-snug line-clamp-2 {{ $inCart ? 'pr-7' : '' }}">{{ $product->name }}</span>
+                                    <span class="text-sm font-semibold text-primary">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
+                                    @if($inCart)
+                                        <span class="badge badge-primary badge-sm absolute top-2 right-2">{{ $inCart }}</span>
+                                    @endif
                                 </button>
                             @empty
-                                <div class="text-center text-sm opacity-50 py-4">{{ __('No products found') }}</div>
+                                <div class="col-span-full text-center text-sm opacity-50 py-8">{{ __('No products found') }}</div>
                             @endforelse
-                        </div>
-
-                        <h4 class="font-semibold mt-6 mb-3">{{ __('Order Items') }}</h4>
-                        <div class="border rounded-lg overflow-hidden">
-                            <table class="table table-sm w-full">
-                                <thead>
-                                    <tr>
-                                        <th>{{ __('Product') }}</th>
-                                        <th>{{ __('Price') }}</th>
-                                        <th>{{ __('Qty') }}</th>
-                                        <th>{{ __('Subtotal') }}</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($items as $index => $item)
-                                        <tr>
-                                            <td>{{ $item['product_name'] }}</td>
-                                            <td>Rp {{ number_format($item['price'], 0, ',', '.') }}</td>
-                                            <td>
-                                                <div class="flex gap-1 items-center">
-                                                    <button 
-                                                        wire:click="decrementQty({{ $index }})"
-                                                        class="btn btn-xs btn-outline"
-                                                    >
-                                                        <x-icon.minus />
-                                                    </button>
-                                                    <input 
-                                                        type="number" 
-                                                        wire:model="items.{{ $index }}.qty"
-                                                        class="input input-bordered input-sm w-16 text-center"
-                                                        readonly
-                                                        min="1"
-                                                    >
-                                                    <button 
-                                                        wire:click="incrementQty({{ $index }})"
-                                                        class="btn btn-xs btn-outline"
-                                                    >
-                                                        <x-icon.plus />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                            <td>Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
-                                            <td>
-                                                <button 
-                                                    wire:click="removeItem({{ $index }})"
-                                                    class="btn btn-xs btn-error text-white"
-                                                >
-                                                    <x-icon.trash />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="5" class="text-center">{{ __('No items added') }}</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
                         </div>
                     </div>
 
-                    <!-- Summary -->
-                    <div class="bg-base-200 rounded-lg p-4 h-fit">
-                        <h4 class="font-semibold mb-4">{{ __('Summary') }}</h4>
-                        
-                        <div class="space-y-3 text-sm">
+                    <div class="lg:col-span-2 flex flex-col gap-4">
+                        <!-- Order Items -->
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold">{{ __('Order Items') }}</h4>
+                                @if(count($items))
+                                    <span class="badge badge-ghost badge-sm">{{ array_sum(array_column($items, 'qty')) }}</span>
+                                @endif
+                            </div>
+                            <div class="rounded-lg border border-base-300 divide-y divide-base-300 max-h-64 overflow-y-auto">
+                                @forelse($items as $index => $item)
+                                    <div wire:key="cart-{{ $item['item_id'] }}" class="p-3 space-y-2">
+                                        <div class="flex items-start justify-between gap-2">
+                                            <div class="min-w-0">
+                                                <div class="text-sm font-medium truncate">{{ $item['product_name'] }}</div>
+                                                <div class="text-xs opacity-60">Rp {{ number_format($item['price'], 0, ',', '.') }}</div>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                wire:click="removeItem({{ $index }})"
+                                                class="btn btn-ghost btn-xs btn-square text-error"
+                                                title="{{ __('Delete') }}"
+                                            >
+                                                <x-icon.trash />
+                                            </button>
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <div class="join [&_svg]:size-3.5">
+                                                <button type="button" wire:click="decrementQty({{ $index }})" class="join-item btn btn-sm btn-square">
+                                                    <x-icon.minus />
+                                                </button>
+                                                <span class="join-item btn btn-sm w-12 pointer-events-none tabular-nums">{{ $item['qty'] }}</span>
+                                                <button type="button" wire:click="incrementQty({{ $index }})" class="join-item btn btn-sm btn-square">
+                                                    <x-icon.plus />
+                                                </button>
+                                            </div>
+                                            <span class="text-sm font-semibold tabular-nums">Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</span>
+                                        </div>
+                                    </div>
+                                @empty
+                                    <div class="flex flex-col items-center gap-2 py-8 text-sm opacity-50">
+                                        <x-icon.shopping-cart />
+                                        {{ __('No items added') }}
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
+
+                        <!-- Summary -->
+                        <div class="rounded-lg bg-base-200 p-4 space-y-3 text-sm">
                             <div class="flex justify-between">
-                                <span>{{ __('Subtotal') }}:</span>
-                                <span>Rp {{ number_format(array_sum(array_column($items, 'subtotal')), 0, ',', '.') }}</span>
+                                <span class="opacity-70">{{ __('Subtotal') }}</span>
+                                <span class="tabular-nums">Rp {{ number_format(array_sum(array_column($items, 'subtotal')), 0, ',', '.') }}</span>
                             </div>
 
-                            <div class="flex justify-between items-center">
-                                <label>{{ __('Discount') }}:</label>
-                                <div class="w-28">
+                            <div class="flex justify-between items-center gap-4">
+                                <label class="opacity-70">{{ __('Discount') }}</label>
+                                <div class="w-36">
                                     <x-currency-input
                                         wire-model="discount"
                                         size="sm"
@@ -330,30 +318,28 @@
                                 </div>
                             </div>
 
-                            <div class="divider my-2"></div>
-
-                            <div class="flex justify-between font-semibold">
-                                <span>{{ __('Total') }}:</span>
-                                <span>Rp {{ number_format($total_price, 0, ',', '.') }}</span>
+                            <div class="flex justify-between items-baseline border-t border-base-300 pt-3">
+                                <span class="font-semibold">{{ __('Total') }}</span>
+                                <span class="text-2xl font-bold text-primary tabular-nums">Rp {{ number_format($total_price, 0, ',', '.') }}</span>
                             </div>
 
-                            <div class="flex justify-between items-center">
-                                <label>{{ __('Payment') }}:</label>
+                            <div class="flex justify-between items-center gap-4">
+                                <label class="opacity-70">{{ __('Payment') }}</label>
                                 <div class="join">
                                     @foreach (['CASH', 'NON_CASH'] as $method)
                                         <button
                                             type="button"
                                             wire:click="$set('payment_method', '{{ $method }}')"
-                                            class="join-item btn btn-xs {{ $payment_method === $method ? 'btn-primary' : 'btn-ghost border-base-300' }}"
+                                            class="join-item btn btn-sm {{ $payment_method === $method ? 'btn-primary' : 'btn-ghost border-base-300' }}"
                                         >{{ \App\Models\Sale::paymentMethodLabel($method) }}</button>
                                     @endforeach
                                 </div>
                             </div>
 
                             @if($payment_method === 'CASH')
-                                <div class="flex justify-between items-center">
-                                    <label>{{ __('Paid Amount') }}:</label>
-                                    <div class="w-28">
+                                <div class="flex justify-between items-center gap-4">
+                                    <label class="opacity-70">{{ __('Paid Amount') }}</label>
+                                    <div class="w-36">
                                         <x-currency-input
                                             wire-model="paid_amount"
                                             size="sm"
@@ -364,30 +350,27 @@
                                     </div>
                                 </div>
 
-                                <div class="divider my-2"></div>
-
-                                <div class="flex justify-between font-semibold">
-                                    <span>{{ __('Change') }}:</span>
-                                    <span>Rp {{ number_format($change_amount, 0, ',', '.') }}</span>
+                                <div class="flex justify-between items-baseline border-t border-base-300 pt-3">
+                                    <span class="font-semibold">{{ __('Change') }}</span>
+                                    <span class="text-lg font-semibold tabular-nums">Rp {{ number_format($change_amount, 0, ',', '.') }}</span>
                                 </div>
                             @endif
                         </div>
 
-                        <div class="modal-action mt-6">
-                            <button 
+                        <div class="flex gap-2">
+                            <button
                                 type="button"
-                                wire:click="closeModal" 
-                                class="btn btn-sm"
+                                wire:click="closeModal"
+                                class="btn btn-ghost"
                             >
-                                <x-icon.x />
                                 {{ __('Cancel') }}
                             </button>
-                            <button 
+                            <button
                                 type="button"
                                 wire:click="save"
                                 wire:loading.attr="disabled"
                                 wire:target="save"
-                                class="btn btn-primary btn-sm"
+                                class="btn btn-primary flex-1"
                             >
                                 <x-icon.check />
                                 {{ __('Save') }}
