@@ -109,7 +109,7 @@
     <!-- Modal -->
     @if($showModal)
         <div class="modal modal-open" onclick="event.target === this || event.stopPropagation()">
-            <div class="modal-box w-11/12 max-w-4xl overflow-visible">
+            <div class="modal-box w-11/12 max-w-4xl">
                 <h3 class="font-bold text-lg mb-4">{{ $editingId ? __('Edit Transaction') : __('New Transaction') }}</h3>
                 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -207,11 +207,11 @@
                                     <span class="label-text">{{ __('Price Type') }}{{ $customer_id ? ' (' . __('Auto') . ')' : '' }}</span>
                                 </label>
                                 @if($customer_id)
-                                    <div class="select select-bordered select-sm bg-base-300 cursor-not-allowed w-100 h-9">
+                                    <div class="select select-bordered select-sm bg-base-300 cursor-not-allowed w-full h-9">
                                         {{ $priceListTypes->firstWhere('id', $price_list_type_id)?->name }} ({{ $priceListTypes->firstWhere('id', $price_list_type_id)?->type }})
                                     </div>
                                 @else
-                                    <select wire:model.live="price_list_type_id" class="select select-bordered select-sm w-100 h-9">
+                                    <select wire:model.live="price_list_type_id" class="select select-bordered select-sm w-full h-9">
                                         @foreach($priceListTypes as $priceType)
                                             <option value="{{ $priceType->id }}">{{ $priceType->name }} ({{ $priceType->type }})</option>
                                         @endforeach
